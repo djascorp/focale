@@ -107,6 +107,22 @@ struct HotKeyTests {
 }
 
 
+// MARK: - Noms de fichiers (les dates locales insèrent des « / » interdits).
+
+@Suite("Noms de fichiers")
+struct FileNameTests {
+    @Test("Séparateurs de date remplacés")
+    func separators() {
+        #expect(AppSettings.sanitizedFileName("Focale 11/10/2026 14:30:05") == "Focale 11-10-2026 14-30-05")
+    }
+
+    @Test("Bords nettoyés et repli si vide")
+    func edges() {
+        #expect(AppSettings.sanitizedFileName("  rapport. ") == "rapport")
+        #expect(AppSettings.sanitizedFileName("   ") == "Capture")
+    }
+}
+
 // MARK: - Recadrage déterministe (verrouille l'orientation haut-gauche).
 
 @Suite("Recadrage déterministe")

@@ -145,9 +145,21 @@ final class AppSettings {
     private func sampleBaseName(date: Date) -> String {
         let day = date.formatted(.dateTime.year().month().day())
         let time = date.formatted(.dateTime.hour().minute().second())
-        return fileNamePattern
+        let raw = fileNamePattern
             .replacingOccurrences(of: "{date}", with: day)
             .replacingOccurrences(of: "{heure}", with: time)
+        return Self.sanitizedFileName(raw)
+    }
+
+    /// Les formats de date locaux insèrent des « / » (et parfois « : »),
+    /// interdits dans un nom de fichier : on les remplace avant écriture.
+    nonisolated static func sanitizedFileName(_ name: String) -> String {
+        var cleaned = name
+            .replacingOccurrences(of: "/", with: "-")
+            .replacingOccurrences(of: ":", with: "-")
+            .trimmingCharacters(in: .whitespaces)
+        while cleaned.hasSuffix(".") { cleaned.removeLast() }
+        return cleaned.isEmpty ? "Capture" : cleaned
     }
 
     private func applyLaunchAtLogin() {

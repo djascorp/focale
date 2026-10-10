@@ -43,7 +43,11 @@ enum DestinationService {
             data = rep.representation(using: .jpeg, properties: [.compressionFactor: 0.92])
         }
         guard let data else { return nil }
-        try? data.write(to: url)
+        do {
+            try data.write(to: url)
+        } catch {
+            return nil
+        }
         return url
     }
 
