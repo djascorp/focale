@@ -9,7 +9,10 @@ struct DisplayCaptureTarget {
     let frame: CGRect
 }
 
-// MARK: - Service de capture ScreenCaptureKit (F2). Rectangles en points, origine haut-gauche.
+// MARK: - Service de capture ScreenCaptureKit.
+//
+// Stratégie déterministe : capture plein écran puis recadrage exact en pixels.
+// Aucune ambiguïté d'unités/origine sur les zones partielles.
 
 @MainActor
 final class CaptureService {
@@ -48,21 +51,29 @@ final class CaptureService {
         return config
     }
 
-    func captureRegion(displayID: CGDirectDisplayID, rect: CGRect, scale: CGFloat) async throws -> CGImage {
+    func captureFullDisplay(displayID: CGDirectDisplayID) async throws -> CGImage {
         await refresh()
         guard let display = content?.displays.first(where: { $0.displayID == displayID }) else {
             throw CaptureError.displayNotFound
         }
         let filter = SCContentFilter(display: display, excludingWindows: ownWindows())
         let config = baseConfig()
-        config.sourceRect = rect
-        config.width = max(Int((rect.width * scale).rounded()), 1)
-        config.height = max(Int((rect.height * scale).rounded()), 1)
+        config.width = display.width
+        config.height = display.height
         return try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
     }
 
-    func captureDisplay(id: CGDirectDisplayID, size: CGSize, scale: CGFloat) async throws -> CGImage {
-        try await captureRegion(displayID: id, rect: CGRect(origin: .zero, size: size), scale: scale)
+    /// rect : points, origine haut-gauche de l'écran.
+    func captureRegion(displayID: CGDirectDisplayID, rect: CGRect, scale: CGFloat) async throws -> CGImage {
+        let full = try await captureFullDisplay(displayID: displayID)
+        guard let cropped = Images.crop(full, toPoints: rect, scale: scale) else {
+            throw CaptureError.cropFailed
+        }
+        return cropped
+    }
+
+    func captureDisplay(id: CGDirectDisplayID) async throws -> CGImage {
+        try await captureFullDisplay(displayID: id)
     }
 
     func captureWindow(windowID: CGWindowID, pixelSize: CGSize) async throws -> CGImage {
@@ -81,11 +92,13 @@ final class CaptureService {
 enum CaptureError: LocalizedError {
     case displayNotFound
     case windowNotFound
+    case cropFailed
 
     var errorDescription: String? {
         switch self {
         case .displayNotFound: "Écran introuvable."
         case .windowNotFound: "Fenêtre introuvable."
+        case .cropFailed: "Impossible d'extraire la zone sélectionnée."
         }
     }
 }

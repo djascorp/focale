@@ -6,8 +6,8 @@ import SwiftUI
 @Observable
 @MainActor
 final class EditorModel {
-    let baseImage: NSImage
-    let baseSize: CGSize
+    var baseImage: NSImage
+    var baseSize: CGSize
 
     var layers: [AnnotationLayer] = []
     var draft: AnnotationLayer?
@@ -24,8 +24,8 @@ final class EditorModel {
     var loupeZoom: CGFloat = 2
 
     private(set) var numberCounter = 1
-    private var undoStack: [[AnnotationLayer]] = []
-    private var redoStack: [[AnnotationLayer]] = []
+    private var undoStack: [(base: NSImage, layers: [AnnotationLayer], counter: Int)] = []
+    private var redoStack: [(base: NSImage, layers: [AnnotationLayer], counter: Int)] = []
 
     init(baseImage: NSImage) {
         self.baseImage = baseImage
@@ -89,25 +89,33 @@ final class EditorModel {
     var canRedo: Bool { !redoStack.isEmpty }
 
     func pushUndo() {
-        undoStack.append(layers)
+        undoStack.append((base: baseImage, layers: layers, counter: numberCounter))
         if undoStack.count > 100 { undoStack.removeFirst() }
         redoStack.removeAll()
     }
 
     func undo() {
         guard let previous = undoStack.popLast() else { return }
-        redoStack.append(layers)
-        layers = previous
+        redoStack.append((base: baseImage, layers: layers, counter: numberCounter))
+        baseImage = previous.base
+        baseSize = previous.base.size
+        layers = previous.layers
+        numberCounter = previous.counter
         selectedID = nil
         draft = nil
+        cropRect = nil
     }
 
     func redo() {
         guard let next = redoStack.popLast() else { return }
-        undoStack.append(layers)
-        layers = next
+        undoStack.append((base: baseImage, layers: layers, counter: numberCounter))
+        baseImage = next.base
+        baseSize = next.base.size
+        layers = next.layers
+        numberCounter = next.counter
         selectedID = nil
         draft = nil
+        cropRect = nil
     }
 
     // MARK: Création (formes tracées).
@@ -133,6 +141,62 @@ final class EditorModel {
         pushUndo()
         layers.append(layer)
         selectedID = layer.id
+    }
+
+    // MARK: Recadrage.
+
+    var cropRect: CGRect?
+
+    func startCrop(at point: CGPoint) {
+        cropRect = CGRect(origin: point, size: .zero)
+    }
+
+    func updateCrop(to point: CGPoint) {
+        guard let origin = cropRect?.origin else { return }
+        cropRect = CGRect(
+            x: min(origin.x, point.x), y: min(origin.y, point.y),
+            width: abs(point.x - origin.x), height: abs(point.y - origin.y)
+        )
+    }
+
+    func cancelCrop() {
+        cropRect = nil
+    }
+
+    func finishCrop() {
+        defer { cropRect = nil }
+        guard let rect = cropRect, rect.width >= 8, rect.height >= 8 else { return }
+        applyCrop(rect)
+    }
+
+    private func applyCrop(_ rect: CGRect) {
+        let clamped = rect.intersection(CGRect(origin: .zero, size: baseSize))
+        guard clamped.width >= 8, clamped.height >= 8 else { return }
+        pushUndo()
+        if let cg = Images.cgImage(from: baseImage) {
+            let scale = CGFloat(cg.width) / max(baseSize.width, 1)
+            let flipped = Geometry.flipY(rect: clamped, containerHeight: baseSize.height)
+            let raw = CGRect(
+                x: (flipped.minX * scale).rounded(),
+                y: (flipped.minY * scale).rounded(),
+                width: (flipped.width * scale).rounded(),
+                height: (flipped.height * scale).rounded()
+            )
+            let full = CGRect(x: 0, y: 0, width: cg.width, height: cg.height)
+            let pixels = raw.integral.intersection(full)
+            if !pixels.isNull, let cropped = cg.cropping(to: pixels) {
+                baseImage = NSImage(cgImage: cropped, size: clamped.size)
+                baseSize = clamped.size
+            }
+        }
+        for index in layers.indices {
+            layers[index].start.x -= clamped.minX
+            layers[index].start.y -= clamped.minY
+            layers[index].end.x -= clamped.minX
+            layers[index].end.y -= clamped.minY
+        }
+        let bounds = CGRect(origin: .zero, size: baseSize)
+        layers.removeAll { !$0.bounds.intersects(bounds) }
     }
 
     // MARK: Création (clic) : numéro, texte, flou, pixellisation, loupe.

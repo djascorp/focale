@@ -48,14 +48,12 @@ final class OverlayController {
         selection = nil
         highlightedWindow = nil
         switch mode {
-        case .region:
+        case .region, .video, .scroll:
             panel.contentView = NSHostingView(rootView: RegionHostView(controller: self))
         case .window:
             panel.contentView = NSHostingView(rootView: WindowHostView(controller: self))
         case .screen:
             panel.contentView = NSHostingView(rootView: ScreenHostView(controller: self))
-        case .video:
-            panel.contentView = NSHostingView(rootView: VideoHostView(controller: self))
         }
         panel.orderFrontRegardless()
     }
@@ -104,16 +102,6 @@ private struct ScreenHostView: View {
     var body: some View {
         ScreenClickView(
             onCommit: { MainActor.assumeIsolated { controller.commitDisplay() } },
-            onCancel: { MainActor.assumeIsolated { controller.cancel() } }
-        )
-    }
-}
-
-private struct VideoHostView: View {
-    @Bindable var controller: OverlayController
-
-    var body: some View {
-        VideoPlaceholderView(
             onCancel: { MainActor.assumeIsolated { controller.cancel() } }
         )
     }
@@ -205,9 +193,19 @@ struct WindowHighlightView: View {
                 }
             }
             .contentShape(Rectangle())
-            .onTapGesture {
-                if let selection { onCommit(selection) }
-            }
+            .gesture(
+                DragGesture(minimumDistance: 0, coordinateSpace: .local)
+                    .onEnded { value in
+                        // Recherche fraîche au point du clic : jamais d'état périmé.
+                        let global = CGPoint(
+                            x: value.location.x + frame.minX,
+                            y: frame.maxY - value.location.y
+                        )
+                        if let found = WindowLookup.topWindow(at: global) {
+                            onCommit(found.id)
+                        }
+                    }
+            )
         }
         .onReceive(ticker) { _ in updateHighlight() }
         .onKeyPress(phases: .down) { press in
@@ -235,14 +233,16 @@ struct WindowHighlightView: View {
             ownerName = ""
             return
         }
-        selection = found.id
-        ownerName = found.owner
-        highlight = CGRect(
+        let rect = CGRect(
             x: found.frame.minX - frame.minX,
             y: frame.maxY - found.frame.maxY,
             width: found.frame.width,
             height: found.frame.height
         )
+        // Gardes anti-battement : ne republier que si quelque chose a changé.
+        if selection != found.id { selection = found.id }
+        if ownerName != found.owner { ownerName = found.owner }
+        if highlight != rect { highlight = rect }
     }
 }
 
@@ -284,40 +284,6 @@ struct ScreenClickView: View {
             } else {
                 NSCursor.pop()
             }
-        }
-    }
-}
-
-// MARK: - Vidéo : rappel v1.1.
-
-struct VideoPlaceholderView: View {
-    var onCancel: () -> Void
-
-    var body: some View {
-        ZStack {
-            Color.black.opacity(0.25).ignoresSafeArea()
-            VStack(spacing: 8) {
-                Image(systemName: "video")
-                    .font(.system(size: 32))
-                Text("L'enregistrement vidéo arrive en v1.1")
-                    .font(.focaleLabel)
-                Text("Cliquez ou Échap pour revenir")
-                    .font(.focaleCaption)
-                    .foregroundStyle(.white.opacity(0.7))
-            }
-            .foregroundStyle(.white)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-            .background(.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        }
-        .contentShape(Rectangle())
-        .onTapGesture(perform: onCancel)
-        .onKeyPress(phases: .down) { press in
-            if press.key == .escape {
-                onCancel()
-                return .handled
-            }
-            return .ignored
         }
     }
 }

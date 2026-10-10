@@ -42,6 +42,7 @@ struct SettingsView: View {
                 Text("\(Int(settings.toastDuration)) s").monospacedDigit()
             }
             Toggle("Son d'obturateur", isOn: $settings.shutterSound)
+            Toggle("Audio système (vidéo)", isOn: $settings.recordSystemAudio)
         }
         .formStyle(.grouped)
     }
@@ -72,6 +73,12 @@ struct SettingsView: View {
             FolderRow(path: $settings.saveFolderPath)
             Picker("Format", selection: $settings.saveFormat) {
                 ForEach(ImageFormat.allCases) { format in
+                    Text(format.title).tag(format)
+                }
+            }
+            .pickerStyle(.segmented)
+            Picker("Format vidéo", selection: $settings.videoFormat) {
+                ForEach(VideoFormat.allCases) { format in
                     Text(format.title).tag(format)
                 }
             }

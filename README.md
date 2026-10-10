@@ -95,8 +95,9 @@ Key areas: `Bar/` (capture bar), `Overlay/` (selection), `Toast/` (thumbnail),
 
 - [x] Capture bar, selection overlay, annotation editor, history, settings
 - [x] Global shortcut + ScreenCaptureKit wiring
-- [ ] OCR, SwiftData history, presets, video recording (v1.1)
-- [ ] Scrolling capture, auto sensitive-data blur, Shortcuts, iCloud (v1.2+)
+- [x] SwiftData history, presets, crop tool, video recording (MP4/GIF)
+- [x] Scrolling capture, Shortcuts / App Intents
+- [ ] OCR, auto sensitive-data blur (needs OCR), iCloud sync (needs provisioning)
 
 ## Contributing
 

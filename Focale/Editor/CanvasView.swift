@@ -27,8 +27,15 @@ struct CanvasView: View {
                     if let draft = model.draft {
                         LayerRenderer.draw(draft, in: &context)
                     }
+                    let inverse = 1 / mapping.scale
+                    if model.tool == .crop, let crop = model.cropRect {
+                        var dim = Path()
+                        dim.addRect(CGRect(origin: .zero, size: model.baseSize))
+                        dim.addRect(crop)
+                        context.fill(dim, with: .color(.black.opacity(0.45)), style: FillStyle(eoFill: true))
+                        context.stroke(Path(crop), with: .color(.white), lineWidth: 1.5 * inverse)
+                    }
                     if let selected = model.selected {
-                        let inverse = 1 / mapping.scale
                         context.stroke(
                             Path(selected.bounds),
                             with: .color(.blue),
@@ -87,11 +94,14 @@ struct CanvasView: View {
                 if distance < 3 {
                     // Clic : placement ou sélection.
                     model.draft = nil
+                    model.cancelCrop()
                     model.click(at: point)
                     return
                 }
                 if model.tool.isShapeTool {
                     model.finishDraft()
+                } else if model.tool == .crop {
+                    model.finishCrop()
                 } else if model.tool == .blur || model.tool == .pixelate, let origin = dragStart {
                     model.dragRaster(
                         kind: model.tool == .blur ? .blur : .pixelate,
@@ -112,6 +122,8 @@ struct CanvasView: View {
             }
         } else if model.tool.isShapeTool {
             model.startDraft(at: point)
+        } else if model.tool == .crop {
+            model.startCrop(at: point)
         }
     }
 
@@ -120,6 +132,8 @@ struct CanvasView: View {
             model.moveSelected(by: delta)
         } else if model.tool.isShapeTool {
             model.updateDraft(to: point)
+        } else if model.tool == .crop {
+            model.updateCrop(to: point)
         }
     }
 

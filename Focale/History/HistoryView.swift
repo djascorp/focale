@@ -101,6 +101,13 @@ struct HistoryView: View {
                         .background(Color.focaleAccentStart, in: Circle())
                         .padding(6)
                 }
+                if shot.kind == .video {
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.white)
+                        .padding(7)
+                        .background(.black.opacity(0.55), in: Circle())
+                }
             }
             Text(shot.name)
                 .font(.focaleBody)
@@ -124,28 +131,52 @@ struct HistoryView: View {
         .background(.background.opacity(0.6), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .contentShape(Rectangle())
         .onTapGesture { selectedID = shot.id }
-        .onTapGesture(count: 2) { onAnnotate(shot) }
+        .onTapGesture(count: 2) { openShot(shot) }
         .contextMenu {
-            Button("Annoter") { onAnnotate(shot) }
+            if shot.kind == .video {
+                Button("Ouvrir") { openShot(shot) }
+            } else {
+                Button("Annoter") { onAnnotate(shot) }
+            }
             Button("Copier") { copyShot(shot) }
             Button(shot.pinned ? "Désépingler" : "Épingler") { store.togglePin(shot.id) }
             Divider()
             Button("Supprimer", role: .destructive) { store.remove(shot.id) }
         }
-        .onDrag { Images.itemProvider(for: shot.image, name: shot.name) }
+        .onDrag {
+            if shot.kind == .video, let url = shot.fileURL {
+                NSItemProvider(contentsOf: url) ?? Images.itemProvider(for: shot.image, name: shot.name)
+            } else {
+                Images.itemProvider(for: shot.image, name: shot.name)
+            }
+        }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(shot.name), \(shot.date.formatted())")
     }
 
     private func copyShot(_ shot: CapturedShot) {
+        if shot.kind == .video, let url = shot.fileURL {
+            let pasteboard = NSPasteboard.general
+            pasteboard.clearContents()
+            pasteboard.writeObjects([url as NSURL])
+            return
+        }
         guard let data = Images.pngData(from: shot.image) else { return }
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setData(data, forType: .png)
     }
+
+    private func openShot(_ shot: CapturedShot) {
+        if shot.kind == .video, let url = shot.fileURL {
+            NSWorkspace.shared.open(url)
+        } else {
+            onAnnotate(shot)
+        }
+    }
 }
 
 #Preview("Historique") {
-    HistoryView(store: HistoryStore(mock: true))
+    HistoryView(store: HistoryStore.preview())
         .frame(width: 900, height: 640)
 }

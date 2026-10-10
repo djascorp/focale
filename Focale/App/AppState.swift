@@ -1,6 +1,8 @@
+import Foundation
+import SwiftData
 import SwiftUI
 
-// MARK: - État global partagé (phase UI : navigation + démo).
+// MARK: - État global partagé.
 
 @Observable
 @MainActor
@@ -14,44 +16,129 @@ final class AppState {
     var lastRegion: CGRect?
     var editorShot: CapturedShot?
 
+    /// Galerie de démonstration (la vraie répétition vit dans CaptureSession).
+    var canRepeatLast: Bool { lastRegion != nil }
+
     init() {
         let settings = AppSettings()
         self.settings = settings
         self.destination = settings.defaultDestination
-        self.history = HistoryStore(mock: true)
+        self.history = HistoryStore.production()
     }
-
-    var canRepeatLast: Bool { lastRegion != nil }
 }
 
-// MARK: - Magasin d'historique (données fictives en phase UI, SwiftData en v1.1).
+// MARK: - Magasin d'historique persistant (SwiftData, recherche plein texte sur le nom + OCR).
 
 @Observable
 @MainActor
 final class HistoryStore {
+    private let context: ModelContext
     var shots: [CapturedShot] = []
     var searchText = ""
 
-    init(mock: Bool) {
-        if mock { shots = CapturedShot.mockSet() }
+    init(context: ModelContext) {
+        self.context = context
+        reload()
+    }
+
+    /// Magasin réel : base Application Support, repli mémoire si indisponible.
+    static func production() -> HistoryStore {
+        if let container = try? Self.container(inMemory: false) {
+            return HistoryStore(context: ModelContext(container))
+        }
+        return HistoryStore(context: ModelContext(try! Self.container(inMemory: true)))
+    }
+
+    /// Magasin de prévisualisation : mémoire + données fictives.
+    static func preview() -> HistoryStore {
+        let store = HistoryStore(context: ModelContext(try! Self.container(inMemory: true)))
+        for shot in CapturedShot.mockSet() {
+            store.add(shot)
+        }
+        return store
+    }
+
+    private static func container(inMemory: Bool) throws -> ModelContainer {
+        let schema = Schema([ShotRecord.self])
+        if inMemory {
+            return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        }
+        guard let folder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        }
+        let directory = folder.appendingPathComponent("Focale", isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let configuration = ModelConfiguration(url: directory.appendingPathComponent("History.store"))
+        return try ModelContainer(for: schema, configurations: configuration)
+    }
+
+    func reload() {
+        var descriptor = FetchDescriptor<ShotRecord>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+        descriptor.fetchLimit = 500
+        let records = (try? context.fetch(descriptor)) ?? []
+        shots = records.compactMap(CapturedShot.init(record:))
+    }
+
+    private func save() {
+        try? context.save()
+    }
+
+    private func record(for id: CapturedShot.ID) -> ShotRecord? {
+        var descriptor = FetchDescriptor<ShotRecord>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        return try? context.fetch(descriptor).first
     }
 
     func add(_ shot: CapturedShot) {
-        shots.insert(shot, at: 0)
+        guard let record = shot.makeRecord() else { return }
+        context.insert(record)
+        pruneIfNeeded()
+        save()
+        reload()
     }
 
     func remove(_ id: CapturedShot.ID) {
+        if let record = record(for: id) {
+            context.delete(record)
+            save()
+        }
         shots.removeAll { $0.id == id }
     }
 
     func togglePin(_ id: CapturedShot.ID) {
-        guard let index = shots.firstIndex(where: { $0.id == id }) else { return }
-        shots[index].pinned.toggle()
+        if let record = record(for: id) {
+            record.pinned.toggle()
+            save()
+        }
+        if let index = shots.firstIndex(where: { $0.id == id }) {
+            shots[index].pinned.toggle()
+        }
     }
 
     func replaceImage(of id: CapturedShot.ID, with image: NSImage) {
-        guard let index = shots.firstIndex(where: { $0.id == id }) else { return }
-        shots[index].image = image
+        guard let data = Images.pngData(from: image) else { return }
+        if let record = record(for: id) {
+            record.imageData = data
+            save()
+        }
+        if let index = shots.firstIndex(where: { $0.id == id }) {
+            shots[index].image = image
+        }
+    }
+
+    /// Conserve au plus 300 enregistrements (les épinglés ne sont jamais purgés).
+    private func pruneIfNeeded() {
+        var descriptor = FetchDescriptor<ShotRecord>(
+            predicate: #Predicate { $0.pinned == false },
+            sortBy: [SortDescriptor(\.date, order: .reverse)]
+        )
+        descriptor.fetchLimit = 10_000
+        let unpinned = (try? context.fetch(descriptor)) ?? []
+        if unpinned.count > 300 {
+            for record in unpinned.dropFirst(300) {
+                context.delete(record)
+            }
+        }
     }
 
     var filtered: [CapturedShot] {

@@ -39,6 +39,15 @@ final class CaptureSession {
     private var frontApp: NSRunningApplication?
     private var captureTask: Task<Void, Never>?
 
+    private let recorder = RecorderService()
+    private let scroller = ScrollCaptureService()
+    var isRecording = false
+    private var recordingPanel: FloatingStatusPanel?
+    private var recordingCrop: CGRect?
+    private var recordingScale: CGFloat = 2
+    private var scrollPanel: FloatingStatusPanel?
+    private var scrollTask: Task<Void, Never>?
+
     var canRepeatLast: Bool { lastCapture != nil }
 
     var hasOnboarded: Bool {
@@ -59,6 +68,7 @@ final class CaptureSession {
         appState.settings.onShortcutsChanged = { [weak self] in
             self?.registerHotkeys()
         }
+        FocaleIntentHandler.shared.session = self
         if !hasOnboarded {
             onboarding.show(settings: appState.settings, startPage: 0) { [weak self] in
                 self?.hasOnboarded = true
@@ -79,7 +89,7 @@ final class CaptureSession {
     // MARK: Session de capture.
 
     func beginCapture() {
-        guard !isActive else { return }
+        guard !isActive, !isRecording else { return }
         guard CGPreflightScreenCaptureAccess() else {
             onboarding.show(settings: appState.settings, startPage: 1) { [weak self] in
                 self?.hasOnboarded = true
@@ -100,17 +110,25 @@ final class CaptureSession {
 
     func cancel() {
         guard isActive else { return }
-        teardown()
+        if isRecording {
+            stopRecording()
+        } else {
+            teardown()
+        }
     }
 
     private func teardown() {
         captureTask?.cancel()
         captureTask = nil
+        scrollTask?.cancel()
+        scrollTask = nil
         countdown = nil
+        saveBarPosition()
         overlays.forEach { $0.hide() }
         overlays.removeAll()
         barPanel?.orderOut(nil)
         barPanel = nil
+        hideScrollPanel()
         isActive = false
         reactivateFrontApp()
     }
@@ -150,7 +168,10 @@ final class CaptureSession {
         let width = max(fitting.width, 560)
         let height = max(fitting.height, 64)
         let frame = screen.visibleFrame
-        let origin = CGPoint(x: frame.midX - width / 2, y: frame.minY + 24)
+        let origin = restoredBarOrigin(
+            defaultingTo: CGPoint(x: frame.midX - width / 2, y: frame.minY + 24),
+            size: NSSize(width: width, height: height)
+        )
         let panel = CaptureBarPanel(contentRect: NSRect(origin: origin, size: NSSize(width: width, height: height)))
         panel.contentView = host
         barPanel = panel
@@ -186,12 +207,30 @@ final class CaptureSession {
                 commitDisplay(screen)
             }
         case .video:
-            NSSound.beep()
+            if let rect = target?.selection, rect.width >= 4, rect.height >= 4, let controller = target {
+                startRecording(rect: rect, on: controller.screen)
+            } else if let screen = target?.screen {
+                startRecording(rect: nil, on: screen)
+            }
+        case .scroll:
+            if let rect = target?.selection, rect.width >= 50, rect.height >= 100, let controller = target {
+                beginScrollCapture(rect: rect, on: controller.screen)
+            } else {
+                NSSound.beep()
+            }
         }
     }
 
     private func commitRegion(_ rect: CGRect, on screen: NSScreen) {
         guard isActive else { return }
+        if appState.mode == .video {
+            startRecording(rect: rect, on: screen)
+            return
+        }
+        if appState.mode == .scroll {
+            beginScrollCapture(rect: rect, on: screen)
+            return
+        }
         // La zone peut déborder sur un autre écran : capturer sur celui du centre.
         let centerGlobal = CGPoint(x: screen.frame.minX + rect.midX, y: screen.frame.maxY - rect.midY)
         let display = NSScreen.screens.first { $0.frame.contains(centerGlobal) } ?? screen
@@ -221,13 +260,13 @@ final class CaptureSession {
             cancel()
             return
         }
-        runCapture(.display(id: target.displayID, size: target.frame.size, scale: target.scale))
+        runCapture(.display(id: target.displayID))
     }
 
     private enum CaptureKind {
         case region(displayID: CGDirectDisplayID, rect: CGRect, scale: CGFloat)
         case window(id: CGWindowID)
-        case display(id: CGDirectDisplayID, size: CGSize, scale: CGFloat)
+        case display(id: CGDirectDisplayID)
     }
 
     private func runCapture(_ kind: CaptureKind) {
@@ -236,6 +275,7 @@ final class CaptureSession {
         overlays.forEach { $0.hide() }
         overlays.removeAll()
         if delay <= 0 {
+            saveBarPosition()
             barPanel?.orderOut(nil)
             barPanel = nil
         }
@@ -255,6 +295,7 @@ final class CaptureSession {
     }
 
     private func performCapture(_ kind: CaptureKind) async {
+        saveBarPosition()
         barPanel?.orderOut(nil)
         barPanel = nil
         countdown = nil
@@ -266,8 +307,8 @@ final class CaptureSession {
                 lastCapture = LastCapture(displayID: displayID, rect: rect, scale: scale)
             case .window(let id):
                 cgImage = try await captureWindowOrFallback(id: id)
-            case .display(let id, let size, let scale):
-                cgImage = try await capture.captureDisplay(id: id, size: size, scale: scale)
+            case .display(let id):
+                cgImage = try await capture.captureDisplay(id: id)
             }
             finishCapture(image: cgImage)
         } catch {
@@ -283,8 +324,12 @@ final class CaptureSession {
            let target = CaptureService.target(for: display) {
             let pixelSize = Geometry.pixelSize(points: frame.size, scale: target.scale)
             do {
-                return try await capture.captureWindow(windowID: id, pixelSize: pixelSize)
-            } catch {
+                let image = try await capture.captureWindow(windowID: id, pixelSize: pixelSize)
+                // Certaines fenêtres rendent une image vide : repli sur la zone.
+                if image.width >= 2 && image.height >= 2 {
+                    return image
+                }
+            } catch {}
                 let local = CGRect(
                     x: frame.minX - display.frame.minX,
                     y: display.frame.maxY - frame.maxY,
@@ -292,13 +337,15 @@ final class CaptureSession {
                     height: frame.height
                 ).intersection(CGRect(origin: .zero, size: display.frame.size))
                 return try await capture.captureRegion(displayID: target.displayID, rect: local, scale: target.scale)
-            }
         }
         throw CaptureError.windowNotFound
     }
 
     private func finishCapture(image: CGImage) {
         let settings = appState.settings
+        if settings.shutterSound {
+            playShutter()
+        }
         DestinationService.route(image: image, destination: appState.destination, settings: settings)
         let shot = CapturedShot(
             image: NSImage(cgImage: image, size: NSSize(width: image.width, height: image.height)),
@@ -312,7 +359,7 @@ final class CaptureSession {
 
     /// Répète la dernière zone (F4), sans rouvrir l'overlay.
     func repeatLast() {
-        guard !isActive, let last = lastCapture else { return }
+        guard !isActive, !isRecording, let last = lastCapture else { return }
         guard CGPreflightScreenCaptureAccess() else { return }
         isActive = true
         frontApp = NSWorkspace.shared.frontmostApplication
@@ -398,6 +445,305 @@ final class CaptureSession {
         if let shot = appState.history.shots.first(where: { $0.id == id }) {
             showToast(shot: shot)
         }
+    }
+
+    // MARK: Enregistrement vidéo.
+
+    private func startRecording(rect: CGRect?, on screen: NSScreen) {
+        guard !isRecording, let target = CaptureService.target(for: screen) else { return }
+        overlays.forEach { $0.hide() }
+        overlays.removeAll()
+        saveBarPosition()
+        barPanel?.orderOut(nil)
+        barPanel = nil
+        let settings = appState.settings
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("Focale-recording-\(UUID().uuidString)")
+            .appendingPathExtension("mp4")
+        let pixelSize = Geometry.pixelSize(points: target.frame.size, scale: target.scale)
+        recordingCrop = rect
+        recordingScale = target.scale
+        let fileName = settings.sampleVideoFileName()
+        let capturesAudio = settings.recordSystemAudio
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await recorder.start(
+                    displayID: target.displayID,
+                    windowID: nil,
+                    pixelSize: pixelSize,
+                    capturesAudio: capturesAudio,
+                    url: tempURL
+                )
+                isRecording = true
+                showRecordingPanel(fileName: fileName)
+            } catch {
+                isActive = false
+                reactivateFrontApp()
+                showError(error)
+            }
+        }
+    }
+
+    func stopRecording() {
+        guard isRecording else { return }
+        isRecording = false
+        hideRecordingPanel()
+        Task { [weak self] in
+            guard let self else { return }
+            let tempURL = await recorder.stop()
+            guard let tempURL else {
+                isActive = false
+                reactivateFrontApp()
+                return
+            }
+            do {
+                let finalURL = try await finalizeRecording(tempURL: tempURL)
+                finishRecording(url: finalURL)
+            } catch {
+                isActive = false
+                reactivateFrontApp()
+                showError(error)
+            }
+        }
+    }
+
+    private func finalizeRecording(tempURL: URL) async throws -> URL {
+        let settings = appState.settings
+        let folder = URL(fileURLWithPath: settings.saveFolderPath, isDirectory: true)
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let croppedURL: URL
+        if let crop = recordingCrop, crop.width >= 8, crop.height >= 8 {
+            let intermediate = FileManager.default.temporaryDirectory
+                .appendingPathComponent("Focale-cropped-\(UUID().uuidString)")
+                .appendingPathExtension("mp4")
+            try await VideoService.transcodeCrop(input: tempURL, crop: crop, scale: recordingScale, output: intermediate)
+            try? FileManager.default.removeItem(at: tempURL)
+            croppedURL = intermediate
+        } else {
+            croppedURL = tempURL
+        }
+        let baseName = settings.sampleVideoFileName()
+        guard let finalURL = DestinationService.uniqueURL(in: folder, baseName: baseName) else {
+            throw VideoError.transcodeFailed
+        }
+        if settings.videoFormat == .gif {
+            try await VideoService.convertToGIF(input: croppedURL, output: finalURL)
+            try? FileManager.default.removeItem(at: croppedURL)
+            return finalURL
+        }
+        if croppedURL != finalURL {
+            try? FileManager.default.removeItem(at: finalURL)
+            try FileManager.default.moveItem(at: croppedURL, to: finalURL)
+        }
+        return finalURL
+    }
+
+    private func finishRecording(url: URL) {
+        Task { [weak self] in
+            guard let self else { return }
+            let thumb = await VideoService.thumbnail(for: url)
+            let duration = await VideoService.duration(of: url)
+            let image = thumb.map { NSImage(cgImage: $0, size: NSSize(width: $0.width, height: $0.height)) }
+                ?? Images.samplePhoto(seed: 9, size: CGSize(width: 640, height: 400))
+            let shot = CapturedShot(
+                image: image,
+                name: url.deletingPathExtension().lastPathComponent,
+                kind: .video,
+                fileURL: url,
+                duration: duration
+            )
+            appState.history.add(shot)
+            // La vidéo est toujours enregistrée ; le presse-papiers reçoit le fichier.
+            if appState.destination == .clipboard || appState.destination == .both {
+                let pasteboard = NSPasteboard.general
+                pasteboard.clearContents()
+                pasteboard.writeObjects([url as NSURL])
+            }
+            isActive = false
+            reactivateFrontApp()
+            showVideoToast(shot: shot)
+        }
+    }
+
+    private func showRecordingPanel(fileName: String) {
+        hideRecordingPanel()
+        let mouse = NSEvent.mouseLocation
+        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(mouse) }) ?? NSScreen.main else {
+            return
+        }
+        let size = NSSize(width: 380, height: 56)
+        let frame = screen.visibleFrame
+        let origin = CGPoint(x: frame.midX - size.width / 2, y: frame.maxY - size.height - 16)
+        let panel = FloatingStatusPanel(contentRect: NSRect(origin: origin, size: size))
+        panel.contentView = NSHostingView(rootView: RecordingIndicatorView(
+            startTime: Date(),
+            fileName: fileName,
+            onStop: { [weak self] in MainActor.assumeIsolated { self?.stopRecording() } }
+        ))
+        recordingPanel = panel
+        panel.orderFrontRegardless()
+    }
+
+    private func hideRecordingPanel() {
+        recordingPanel?.orderOut(nil)
+        recordingPanel = nil
+    }
+
+    private func showVideoToast(shot: CapturedShot) {
+        hideToast()
+        guard let screen = NSScreen.main else { return }
+        let size = NSSize(width: 232, height: 176)
+        let origin = CGPoint(
+            x: screen.visibleFrame.maxX - size.width - 16,
+            y: screen.visibleFrame.minY + 16
+        )
+        let panel = ToastPanel(contentRect: NSRect(origin: origin, size: size))
+        let id = shot.id
+        panel.contentView = NSHostingView(rootView: VideoToastView(
+            shot: shot,
+            autoDismiss: appState.settings.toastDuration,
+            onPlay: { [weak self] in MainActor.assumeIsolated { self?.playToastVideo(id) } },
+            onShare: { [weak self] in MainActor.assumeIsolated { self?.shareToastVideo(id) } },
+            onReveal: { [weak self] in MainActor.assumeIsolated { self?.revealToastVideo(id) } },
+            onDelete: { [weak self] in MainActor.assumeIsolated { self?.deleteToastVideo(id) } },
+            onDismiss: { [weak self] in MainActor.assumeIsolated { self?.hideToast() } }
+        ))
+        toastPanel = panel
+        panel.orderFrontRegardless()
+    }
+
+    private func videoURL(for id: CapturedShot.ID) -> URL? {
+        appState.history.shots.first { $0.id == id }?.fileURL
+    }
+
+    private func playToastVideo(_ id: CapturedShot.ID) {
+        guard let url = videoURL(for: id) else { return }
+        NSWorkspace.shared.open(url)
+    }
+
+    private func shareToastVideo(_ id: CapturedShot.ID) {
+        guard let url = videoURL(for: id), let view = toastPanel?.contentView else { return }
+        NSSharingServicePicker(items: [url]).show(relativeTo: .zero, of: view, preferredEdge: .minY)
+    }
+
+    private func revealToastVideo(_ id: CapturedShot.ID) {
+        guard let url = videoURL(for: id) else { return }
+        NSWorkspace.shared.activateFileViewerSelecting([url])
+    }
+
+    private func deleteToastVideo(_ id: CapturedShot.ID) {
+        if let url = videoURL(for: id) {
+            try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
+        }
+        appState.history.remove(id)
+        hideToast()
+    }
+
+    // MARK: Capture défilante.
+
+    private func beginScrollCapture(rect: CGRect, on screen: NSScreen) {
+        guard !isRecording else { return }
+        let centerGlobal = CGPoint(x: screen.frame.minX + rect.midX, y: screen.frame.maxY - rect.midY)
+        let display = NSScreen.screens.first { $0.frame.contains(centerGlobal) } ?? screen
+        guard let target = CaptureService.target(for: display) else {
+            cancel()
+            return
+        }
+        var local = CGRect(
+            x: screen.frame.minX + rect.minX - display.frame.minX,
+            y: display.frame.maxY - (screen.frame.maxY - rect.minY),
+            width: rect.width,
+            height: rect.height
+        )
+        local = local.intersection(CGRect(origin: .zero, size: display.frame.size))
+        guard !local.isNull, local.width >= 50, local.height >= 100 else {
+            cancel()
+            return
+        }
+        overlays.forEach { $0.hide() }
+        overlays.removeAll()
+        saveBarPosition()
+        barPanel?.orderOut(nil)
+        barPanel = nil
+        showScrollPanel()
+        scrollTask?.cancel()
+        scrollTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let image = try await scroller.run(displayID: target.displayID, rect: local, scale: target.scale)
+                hideScrollPanel()
+                finishCapture(image: image)
+            } catch is CancellationError {
+                hideScrollPanel()
+                teardown()
+            } catch {
+                hideScrollPanel()
+                isActive = false
+                reactivateFrontApp()
+                if (error as? ScrollError) == .accessibilityDenied {
+                    openAccessibilitySettings()
+                }
+                showError(error)
+            }
+        }
+    }
+
+    private func showScrollPanel() {
+        hideScrollPanel()
+        guard let screen = NSScreen.main else { return }
+        let size = NSSize(width: 340, height: 56)
+        let frame = screen.visibleFrame
+        let origin = CGPoint(x: frame.midX - size.width / 2, y: frame.maxY - size.height - 16)
+        let panel = FloatingStatusPanel(contentRect: NSRect(origin: origin, size: size))
+        panel.contentView = NSHostingView(rootView: ScrollProgressView(
+            startTime: Date(),
+            onCancel: { [weak self] in MainActor.assumeIsolated { self?.cancelScroll() } }
+        ))
+        scrollPanel = panel
+        panel.orderFrontRegardless()
+    }
+
+    private func hideScrollPanel() {
+        scrollPanel?.orderOut(nil)
+        scrollPanel = nil
+    }
+
+    private func cancelScroll() {
+        scrollTask?.cancel()
+    }
+
+    private func openAccessibilitySettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    // MARK: Position de la barre + son.
+
+    private func saveBarPosition() {
+        if let panel = barPanel {
+            appState.settings.saveBarPosition(panel.frame.origin)
+        }
+    }
+
+    private func restoredBarOrigin(defaultingTo origin: CGPoint, size: NSSize) -> CGPoint {
+        guard let x = appState.settings.barPositionX,
+              let y = appState.settings.barPositionY else { return origin }
+        let candidate = CGPoint(x: x, y: y)
+        let rect = CGRect(origin: candidate, size: size)
+        for screen in NSScreen.screens where screen.visibleFrame.intersects(rect) {
+            return candidate
+        }
+        return origin
+    }
+
+    private func playShutter() {
+        guard let sound = NSSound(contentsOfFile: "/System/Library/Sounds/Tink.aiff", byReference: true) else {
+            return
+        }
+        sound.volume = 0.6
+        sound.play()
     }
 
     // MARK: Divers.

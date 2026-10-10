@@ -186,4 +186,20 @@ enum Images {
               let rendered = ciContext.createCGImage(output, from: input.extent) else { return nil }
         return NSImage(cgImage: rendered, size: rect.size)
     }
+
+    // MARK: Recadrage déterministe (CGImage et points partagent l'origine haut-gauche : pas d'inversion).
+
+    /// Extrait un rectangle (points, origine haut-gauche) d'une image plein écran.
+    static func crop(_ image: CGImage, toPoints rect: CGRect, scale: CGFloat) -> CGImage? {
+        let pixels = CGRect(
+            x: (rect.minX * scale).rounded(),
+            y: (rect.minY * scale).rounded(),
+            width: (rect.width * scale).rounded(),
+            height: (rect.height * scale).rounded()
+        )
+        let bounds = CGRect(x: 0, y: 0, width: image.width, height: image.height)
+        let final = pixels.integral.intersection(bounds)
+        guard !final.isNull, final.width >= 1, final.height >= 1 else { return nil }
+        return image.cropping(to: final)
+    }
 }

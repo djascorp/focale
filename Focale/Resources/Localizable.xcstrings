@@ -51,6 +51,16 @@
         }
       }
     },
+    "Défilement" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scrolling"
+          }
+        }
+      }
+    },
     "E-mail" : {
       "localizations" : {
         "en" : {

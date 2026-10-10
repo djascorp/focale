@@ -4,7 +4,7 @@ import SwiftUI
 // MARK: - Modes de capture (F2).
 
 enum CaptureMode: String, CaseIterable, Identifiable {
-    case region, window, screen, video
+    case region, window, screen, video, scroll
 
     var id: String { rawValue }
 
@@ -14,6 +14,7 @@ enum CaptureMode: String, CaseIterable, Identifiable {
         case .window: String(localized: "Fenêtre")
         case .screen: String(localized: "Écran")
         case .video: String(localized: "Vidéo")
+        case .scroll: String(localized: "Défilement")
         }
     }
 
@@ -23,6 +24,7 @@ enum CaptureMode: String, CaseIterable, Identifiable {
         case .window: "macwindow"
         case .screen: "display"
         case .video: "video"
+        case .scroll: "arrow.up.and.down"
         }
     }
 
@@ -32,6 +34,7 @@ enum CaptureMode: String, CaseIterable, Identifiable {
         case .window: "2"
         case .screen: "3"
         case .video: "4"
+        case .scroll: "5"
         }
     }
 }
@@ -99,6 +102,17 @@ enum ImageFormat: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
     var title: String { rawValue.uppercased() }
+}
+
+enum VideoFormat: String, CaseIterable, Identifiable {
+    case mp4, gif
+
+    var id: String { rawValue }
+    var title: String { rawValue.uppercased() }
+}
+
+enum ShotKind: String, Codable {
+    case image, video
 }
 
 enum PresetKind: String, CaseIterable, Identifiable {
@@ -177,6 +191,9 @@ struct CapturedShot: Identifiable {
     var pinned: Bool
     var ocrText: String?
     var name: String
+    var kind: ShotKind
+    var fileURL: URL?
+    var duration: TimeInterval
 
     init(
         id: UUID = UUID(),
@@ -184,7 +201,10 @@ struct CapturedShot: Identifiable {
         date: Date = Date(),
         pinned: Bool = false,
         ocrText: String? = nil,
-        name: String
+        name: String,
+        kind: ShotKind = .image,
+        fileURL: URL? = nil,
+        duration: TimeInterval = 0
     ) {
         self.id = id
         self.image = image
@@ -192,6 +212,9 @@ struct CapturedShot: Identifiable {
         self.pinned = pinned
         self.ocrText = ocrText
         self.name = name
+        self.kind = kind
+        self.fileURL = fileURL
+        self.duration = duration
     }
 
     var pixelSize: CGSize {
@@ -265,8 +288,7 @@ enum AnnotationTool: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    /// Recadrage prévu mais non implémenté dans cette phase UI.
-    var isImplemented: Bool { self != .crop }
+    var isImplemented: Bool { true }
 
     var isClickTool: Bool {
         switch self {

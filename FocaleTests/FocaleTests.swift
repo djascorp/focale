@@ -1,6 +1,7 @@
 import AppKit
 import CoreGraphics
 import Foundation
+import SwiftData
 import Testing
 
 @testable import Focale
@@ -105,6 +106,114 @@ struct HotKeyTests {
     }
 }
 
+// MARK: - Recadrage déterministe (verrouille l'orientation haut-gauche).
+
+@Suite("Recadrage déterministe")
+struct CropTests {
+    /// Quadrants en repère haut-gauche : rouge, vert / bleu, jaune.
+    private func quadrantImage() -> CGImage {
+        let context = CGContext(
+            data: nil, width: 8, height: 8,
+            bitsPerComponent: 8, bytesPerRow: 32,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        )!
+        // CGContext en bas-gauche : le « haut » de l'image est à y = 4.
+        context.setFillColor(CGColor(red: 1, green: 0, blue: 0, alpha: 1))
+        context.fill(CGRect(x: 0, y: 4, width: 4, height: 4))
+        context.setFillColor(CGColor(red: 0, green: 1, blue: 0, alpha: 1))
+        context.fill(CGRect(x: 4, y: 4, width: 4, height: 4))
+        context.setFillColor(CGColor(red: 0, green: 0, blue: 1, alpha: 1))
+        context.fill(CGRect(x: 0, y: 0, width: 4, height: 4))
+        context.setFillColor(CGColor(red: 1, green: 1, blue: 0, alpha: 1))
+        context.fill(CGRect(x: 4, y: 0, width: 4, height: 4))
+        return context.makeImage()!
+    }
+
+    /// Pixel en coordonnées haut-gauche, via un rendu dans un tampon frais.
+    private func pixel(_ image: CGImage, x: Int, y: Int) -> (UInt8, UInt8, UInt8) {
+        let width = image.width
+        let height = image.height
+        guard let context = CGContext(
+            data: nil, width: width, height: height,
+            bitsPerComponent: 8, bytesPerRow: width * 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return (0, 0, 0) }
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        guard let data = context.data else { return (0, 0, 0) }
+        let bytes = data.bindMemory(to: UInt8.self, capacity: width * height * 4)
+        // Tampon bas-haut : la ligne du haut est la dernière.
+        let offset = ((height - 1 - y) * width + x) * 4
+        return (bytes[offset], bytes[offset + 1], bytes[offset + 2])
+    }
+
+    /// Comparaisons tolérantes : la conversion d'espace colorimétrique décale les octets.
+    private func isRed(_ pixel: (UInt8, UInt8, UInt8)) -> Bool {
+        pixel.0 >= 200 && pixel.1 < 120 && pixel.2 < 120
+    }
+
+    private func isYellow(_ pixel: (UInt8, UInt8, UInt8)) -> Bool {
+        pixel.0 >= 200 && pixel.1 >= 200 && pixel.2 < 120
+    }
+
+    @Test("Haut-gauche sans inversion")
+    func topLeft() {
+        guard let cropped = Images.crop(
+            quadrantImage(), toPoints: CGRect(x: 0, y: 0, width: 4, height: 4), scale: 1
+        ) else {
+            Issue.record("recadrage impossible")
+            return
+        }
+        #expect(cropped.width == 4 && cropped.height == 4)
+        #expect(isRed(pixel(cropped, x: 0, y: 0)))
+    }
+
+    @Test("Bas-droite sans inversion")
+    func bottomRight() {
+        guard let cropped = Images.crop(
+            quadrantImage(), toPoints: CGRect(x: 4, y: 4, width: 4, height: 4), scale: 1
+        ) else {
+            Issue.record("recadrage impossible")
+            return
+        }
+        #expect(isYellow(pixel(cropped, x: 0, y: 0)))
+    }
+
+    @Test("Borné à l'image")
+    func clamped() {
+        let image = quadrantImage()
+        #expect(Images.crop(image, toPoints: CGRect(x: 6, y: 6, width: 100, height: 100), scale: 1)?.width == 2)
+        #expect(Images.crop(image, toPoints: CGRect(x: 50, y: 50, width: 10, height: 10), scale: 1) == nil)
+    }
+}
+
+// MARK: - Historique persistant.
+
+@Suite("Historique persistant")
+@MainActor
+struct HistoryStoreTests {
+    @Test("Ajout, épinglage et suppression")
+    func roundtrip() throws {
+        let container = try ModelContainer(
+            for: ShotRecord.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let store = HistoryStore(context: ModelContext(container))
+        #expect(store.shots.isEmpty)
+        let shot = CapturedShot(
+            image: Images.samplePhoto(seed: 1, size: CGSize(width: 64, height: 64)),
+            name: "Test"
+        )
+        store.add(shot)
+        #expect(store.shots.count == 1)
+        store.togglePin(shot.id)
+        #expect(store.shots.first?.pinned == true)
+        store.remove(shot.id)
+        #expect(store.shots.isEmpty)
+    }
+}
+
 // MARK: - Modèle d'édition.
 
 @Suite("Modèle d'édition")
@@ -177,5 +286,21 @@ struct EditorModelTests {
         model.tool = .text
         model.click(at: CGPoint(x: 40, y: 40))
         #expect(model.renderedImage().size == CGSize(width: 800, height: 600))
+    }
+
+    @Test("Le recadrage ajuste l'image, décale les calques et s'annule")
+    func cropShiftsLayers() {
+        let model = makeModel()
+        model.tool = .number
+        model.click(at: CGPoint(x: 400, y: 400))
+        model.tool = .crop
+        model.startCrop(at: CGPoint(x: 100, y: 100))
+        model.updateCrop(to: CGPoint(x: 500, y: 500))
+        model.finishCrop()
+        #expect(model.baseSize == CGSize(width: 400, height: 400))
+        #expect(model.layers.first?.start == CGPoint(x: 300, y: 300))
+        model.undo()
+        #expect(model.baseSize == CGSize(width: 800, height: 600))
+        #expect(model.layers.first?.start == CGPoint(x: 400, y: 400))
     }
 }

@@ -41,6 +41,13 @@
 		F0CA1E0000000000000000A9 /* ToastPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000069 /* ToastPanel.swift */; };
 		F0CA1E0000000000000000AA /* EditorWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000006A /* EditorWindowController.swift */; };
 		F0CA1E0000000000000000AB /* OnboardingWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000006B /* OnboardingWindowController.swift */; };
+		F0CA1E0000000000000000AC /* ScrollCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000006C /* ScrollCaptureService.swift */; };
+		F0CA1E0000000000000000AD /* RecorderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000006D /* RecorderService.swift */; };
+		F0CA1E0000000000000000AE /* VideoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000006E /* VideoService.swift */; };
+		F0CA1E0000000000000000AF /* RecordingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000006F /* RecordingPanel.swift */; };
+		F0CA1E0000000000000000B0 /* VideoToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000070 /* VideoToastView.swift */; };
+		F0CA1E0000000000000000B1 /* ShotRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000071 /* ShotRecord.swift */; };
+		F0CA1E0000000000000000B2 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000072 /* AppIntents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -90,6 +97,13 @@
 		F0CA1E000000000000000069 /* ToastPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastPanel.swift; sourceTree = "<group>"; };
 		F0CA1E00000000000000006A /* EditorWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorWindowController.swift; sourceTree = "<group>"; };
 		F0CA1E00000000000000006B /* OnboardingWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWindowController.swift; sourceTree = "<group>"; };
+		F0CA1E00000000000000006C /* ScrollCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollCaptureService.swift; sourceTree = "<group>"; };
+		F0CA1E00000000000000006D /* RecorderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderService.swift; sourceTree = "<group>"; };
+		F0CA1E00000000000000006E /* VideoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoService.swift; sourceTree = "<group>"; };
+		F0CA1E00000000000000006F /* RecordingPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingPanel.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000070 /* VideoToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoToastView.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000071 /* ShotRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotRecord.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000072 /* AppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +159,8 @@
 				F0CA1E000000000000000011 /* Onboarding */,
 				F0CA1E000000000000000012 /* Resources */,
 				F0CA1E000000000000000024 /* Capture */,
+				F0CA1E000000000000000025 /* Recording */,
+				F0CA1E000000000000000026 /* Intents */,
 			);
 			path = Focale;
 			sourceTree = "<group>";
@@ -187,6 +203,7 @@
 				F0CA1E000000000000000064 /* CaptureService.swift */,
 				F0CA1E000000000000000065 /* DestinationService.swift */,
 				F0CA1E000000000000000066 /* CaptureSession.swift */,
+				F0CA1E00000000000000006C /* ScrollCaptureService.swift */,
 			);
 			path = Capture;
 			sourceTree = "<group>";
@@ -209,11 +226,30 @@
 			path = Overlay;
 			sourceTree = "<group>";
 		};
+		F0CA1E000000000000000025 /* Recording */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E00000000000000006D /* RecorderService.swift */,
+				F0CA1E00000000000000006E /* VideoService.swift */,
+				F0CA1E00000000000000006F /* RecordingPanel.swift */,
+			);
+			path = Recording;
+			sourceTree = "<group>";
+		};
+		F0CA1E000000000000000026 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000072 /* AppIntents.swift */,
+			);
+			path = Intents;
+			sourceTree = "<group>";
+		};
 		F0CA1E00000000000000000D /* Toast */ = {
 			isa = PBXGroup;
 			children = (
 				F0CA1E00000000000000004E /* PreviewToastView.swift */,
 				F0CA1E000000000000000069 /* ToastPanel.swift */,
+				F0CA1E000000000000000070 /* VideoToastView.swift */,
 			);
 			path = Toast;
 			sourceTree = "<group>";
@@ -234,6 +270,7 @@
 			isa = PBXGroup;
 			children = (
 				F0CA1E000000000000000053 /* HistoryView.swift */,
+				F0CA1E000000000000000071 /* ShotRecord.swift */,
 			);
 			path = History;
 			sourceTree = "<group>";
@@ -405,6 +442,13 @@
 				F0CA1E0000000000000000A9 /* ToastPanel.swift in Sources */,
 				F0CA1E0000000000000000AA /* EditorWindowController.swift in Sources */,
 				F0CA1E0000000000000000AB /* OnboardingWindowController.swift in Sources */,
+				F0CA1E0000000000000000AC /* ScrollCaptureService.swift in Sources */,
+				F0CA1E0000000000000000AD /* RecorderService.swift in Sources */,
+				F0CA1E0000000000000000AE /* VideoService.swift in Sources */,
+				F0CA1E0000000000000000AF /* RecordingPanel.swift in Sources */,
+				F0CA1E0000000000000000B0 /* VideoToastView.swift in Sources */,
+				F0CA1E0000000000000000B1 /* ShotRecord.swift in Sources */,
+				F0CA1E0000000000000000B2 /* AppIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

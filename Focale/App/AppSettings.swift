@@ -64,6 +64,14 @@ final class AppSettings {
     var telemetryEnabled: Bool {
         didSet { defaults.set(telemetryEnabled, forKey: "focale.telemetry") }
     }
+    var videoFormat: VideoFormat {
+        didSet { defaults.set(videoFormat.rawValue, forKey: "focale.videoFormat") }
+    }
+    var recordSystemAudio: Bool {
+        didSet { defaults.set(recordSystemAudio, forKey: "focale.recordAudio") }
+    }
+    var barPositionX: Double?
+    var barPositionY: Double?
     var activePreset: PresetKind? {
         didSet { defaults.set(activePreset?.rawValue, forKey: "focale.preset") }
     }
@@ -107,6 +115,17 @@ final class AppSettings {
         mainShortcut = Self.loadShortcut(defaults, key: "focale.shortcut.main") ?? .defaultMain
         historyShortcut = Self.loadShortcut(defaults, key: "focale.shortcut.history") ?? .defaultHistory
         repeatShortcut = Self.loadShortcut(defaults, key: "focale.shortcut.repeat") ?? .defaultRepeat
+        videoFormat = VideoFormat(rawValue: defaults.string(forKey: "focale.videoFormat") ?? "") ?? .mp4
+        recordSystemAudio = defaults.object(forKey: "focale.recordAudio") as? Bool ?? false
+        barPositionX = defaults.object(forKey: "focale.barX") as? Double
+        barPositionY = defaults.object(forKey: "focale.barY") as? Double
+    }
+
+    func saveBarPosition(_ point: CGPoint) {
+        barPositionX = point.x
+        barPositionY = point.y
+        defaults.set(point.x, forKey: "focale.barX")
+        defaults.set(point.y, forKey: "focale.barY")
     }
 
     func applyPreset(_ preset: PresetKind) {
@@ -116,12 +135,19 @@ final class AppSettings {
     }
 
     func sampleFileName(date: Date = Date()) -> String {
+        sampleBaseName(date: date) + "." + saveFormat.rawValue
+    }
+
+    func sampleVideoFileName(date: Date = Date()) -> String {
+        sampleBaseName(date: date) + "." + videoFormat.rawValue
+    }
+
+    private func sampleBaseName(date: Date) -> String {
         let day = date.formatted(.dateTime.year().month().day())
         let time = date.formatted(.dateTime.hour().minute().second())
         return fileNamePattern
             .replacingOccurrences(of: "{date}", with: day)
             .replacingOccurrences(of: "{heure}", with: time)
-            + "." + saveFormat.rawValue
     }
 
     private func applyLaunchAtLogin() {

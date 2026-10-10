@@ -182,6 +182,7 @@ struct CaptureBarView: View {
         case "2": mode = .window
         case "3": mode = .screen
         case "4": mode = .video
+        case "5": mode = .scroll
         case "t": timer = timer.next()
         case "r": if canRepeatLast { onRepeatLast() } else { return .ignored }
         case "c": onCapture()
