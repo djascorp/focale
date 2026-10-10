@@ -8,7 +8,13 @@ struct OnboardingView: View {
     @Bindable var settings: AppSettings
     var onFinish: () -> Void = {}
 
-    @State private var page = 0
+    @State private var page: Int
+
+    init(settings: AppSettings, startPage: Int = 0, onFinish: @escaping () -> Void = {}) {
+        _settings = Bindable(wrappedValue: settings)
+        _page = State(initialValue: startPage)
+        self.onFinish = onFinish
+    }
 
     var body: some View {
         VStack(spacing: 0) {

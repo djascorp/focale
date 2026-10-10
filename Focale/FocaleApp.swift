@@ -4,7 +4,14 @@ import SwiftUI
 
 @main
 struct FocaleApp: App {
-    @State private var appState = AppState()
+    @State private var appState: AppState
+    @State private var session: CaptureSession
+
+    init() {
+        let state = AppState()
+        _appState = State(wrappedValue: state)
+        _session = State(wrappedValue: CaptureSession(appState: state))
+    }
 
     var body: some Scene {
         Window("Focale — Galerie UI", id: "gallery") {
@@ -37,6 +44,7 @@ struct FocaleApp: App {
         MenuBarExtra("Focale", systemImage: "rectangle.dashed") {
             MenuBarContent()
                 .environment(appState)
+                .environment(session)
         }
     }
 }
@@ -45,20 +53,31 @@ struct FocaleApp: App {
 
 private struct MenuBarContent: View {
     @Environment(AppState.self) private var appState
+    @Environment(CaptureSession.self) private var session
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        Button("Nouvelle capture") { openWindow(id: "gallery") }
-            .keyboardShortcut("5", modifiers: [.command, .shift])
-        Button("Historique") { openWindow(id: "history") }
-        Divider()
-        Button("Réglages…") {
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        Group {
+            Button("Nouvelle capture") { session.beginCapture() }
+                .keyboardShortcut("5", modifiers: [.command, .shift])
+            Button("Historique") { openWindow(id: "history") }
+            Button("Galerie UI (dev)") { openWindow(id: "gallery") }
+            Divider()
+            Button("Réglages…") {
+                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            }
+            .keyboardShortcut(",", modifiers: .command)
+            Divider()
+            Button("Quitter Focale") { NSApplication.shared.terminate(nil) }
+                .keyboardShortcut("q", modifiers: .command)
         }
-        .keyboardShortcut(",", modifiers: .command)
-        Divider()
-        Button("Quitter Focale") { NSApplication.shared.terminate(nil) }
-            .keyboardShortcut("q", modifiers: .command)
+        .onAppear { session.start() }
+    .onReceive(NotificationCenter.default.publisher(for: .focaleOpenHistory)) { _ in
+        openWindow(id: "history")
+    }
+    .onReceive(NotificationCenter.default.publisher(for: .focaleOpenGallery)) { _ in
+        openWindow(id: "gallery")
+    }
     }
 }
 

@@ -32,6 +32,15 @@
 		F0CA1E0000000000000000A0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000060 /* Assets.xcassets */; };
 		F0CA1E0000000000000000A1 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000061 /* Localizable.xcstrings */; };
 		F0CA1E0000000000000000A2 /* FocaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000062 /* FocaleTests.swift */; };
+		F0CA1E0000000000000000A3 /* HotKeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000063 /* HotKeyService.swift */; };
+		F0CA1E0000000000000000A4 /* CaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000064 /* CaptureService.swift */; };
+		F0CA1E0000000000000000A5 /* DestinationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000065 /* DestinationService.swift */; };
+		F0CA1E0000000000000000A6 /* CaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000066 /* CaptureSession.swift */; };
+		F0CA1E0000000000000000A7 /* OverlayPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000067 /* OverlayPanel.swift */; };
+		F0CA1E0000000000000000A8 /* CaptureBarPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000068 /* CaptureBarPanel.swift */; };
+		F0CA1E0000000000000000A9 /* ToastPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000069 /* ToastPanel.swift */; };
+		F0CA1E0000000000000000AA /* EditorWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000006A /* EditorWindowController.swift */; };
+		F0CA1E0000000000000000AB /* OnboardingWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000006B /* OnboardingWindowController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +81,15 @@
 		F0CA1E000000000000000060 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F0CA1E000000000000000061 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		F0CA1E000000000000000062 /* FocaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocaleTests.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000063 /* HotKeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyService.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000064 /* CaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureService.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000065 /* DestinationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestinationService.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000066 /* CaptureSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSession.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000067 /* OverlayPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPanel.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000068 /* CaptureBarPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureBarPanel.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000069 /* ToastPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastPanel.swift; sourceTree = "<group>"; };
+		F0CA1E00000000000000006A /* EditorWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorWindowController.swift; sourceTree = "<group>"; };
+		F0CA1E00000000000000006B /* OnboardingWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWindowController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +144,7 @@
 				F0CA1E000000000000000010 /* Settings */,
 				F0CA1E000000000000000011 /* Onboarding */,
 				F0CA1E000000000000000012 /* Resources */,
+				F0CA1E000000000000000024 /* Capture */,
 			);
 			path = Focale;
 			sourceTree = "<group>";
@@ -161,10 +180,22 @@
 			path = DesignSystem;
 			sourceTree = "<group>";
 		};
+		F0CA1E000000000000000024 /* Capture */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000063 /* HotKeyService.swift */,
+				F0CA1E000000000000000064 /* CaptureService.swift */,
+				F0CA1E000000000000000065 /* DestinationService.swift */,
+				F0CA1E000000000000000066 /* CaptureSession.swift */,
+			);
+			path = Capture;
+			sourceTree = "<group>";
+		};
 		F0CA1E00000000000000000B /* Bar */ = {
 			isa = PBXGroup;
 			children = (
 				F0CA1E00000000000000004C /* CaptureBarView.swift */,
+				F0CA1E000000000000000068 /* CaptureBarPanel.swift */,
 			);
 			path = Bar;
 			sourceTree = "<group>";
@@ -173,6 +204,7 @@
 			isa = PBXGroup;
 			children = (
 				F0CA1E00000000000000004D /* SelectionOverlayView.swift */,
+				F0CA1E000000000000000067 /* OverlayPanel.swift */,
 			);
 			path = Overlay;
 			sourceTree = "<group>";
@@ -181,6 +213,7 @@
 			isa = PBXGroup;
 			children = (
 				F0CA1E00000000000000004E /* PreviewToastView.swift */,
+				F0CA1E000000000000000069 /* ToastPanel.swift */,
 			);
 			path = Toast;
 			sourceTree = "<group>";
@@ -192,6 +225,7 @@
 				F0CA1E000000000000000050 /* EditorView.swift */,
 				F0CA1E000000000000000051 /* CanvasView.swift */,
 				F0CA1E000000000000000052 /* InspectorView.swift */,
+				F0CA1E00000000000000006A /* EditorWindowController.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -216,6 +250,7 @@
 			isa = PBXGroup;
 			children = (
 				F0CA1E000000000000000055 /* OnboardingView.swift */,
+				F0CA1E00000000000000006B /* OnboardingWindowController.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -361,6 +396,15 @@
 				F0CA1E000000000000000093 /* HistoryView.swift in Sources */,
 				F0CA1E000000000000000094 /* SettingsView.swift in Sources */,
 				F0CA1E000000000000000095 /* OnboardingView.swift in Sources */,
+				F0CA1E0000000000000000A3 /* HotKeyService.swift in Sources */,
+				F0CA1E0000000000000000A4 /* CaptureService.swift in Sources */,
+				F0CA1E0000000000000000A5 /* DestinationService.swift in Sources */,
+				F0CA1E0000000000000000A6 /* CaptureSession.swift in Sources */,
+				F0CA1E0000000000000000A7 /* OverlayPanel.swift in Sources */,
+				F0CA1E0000000000000000A8 /* CaptureBarPanel.swift in Sources */,
+				F0CA1E0000000000000000A9 /* ToastPanel.swift in Sources */,
+				F0CA1E0000000000000000AA /* EditorWindowController.swift in Sources */,
+				F0CA1E0000000000000000AB /* OnboardingWindowController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

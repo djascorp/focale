@@ -31,6 +31,9 @@ struct Shortcut: Codable, Hashable {
 final class AppSettings {
     private let defaults: UserDefaults
 
+    /// Appelé quand un raccourci change (la session ré-enregistre les touches globales).
+    var onShortcutsChanged: (@MainActor () -> Void)?
+
     var defaultDestination: Destination {
         didSet { defaults.set(defaultDestination.rawValue, forKey: "focale.destination") }
     }
@@ -65,13 +68,22 @@ final class AppSettings {
         didSet { defaults.set(activePreset?.rawValue, forKey: "focale.preset") }
     }
     var mainShortcut: Shortcut {
-        didSet { storeShortcut(mainShortcut, key: "focale.shortcut.main") }
+        didSet {
+            storeShortcut(mainShortcut, key: "focale.shortcut.main")
+            onShortcutsChanged?()
+        }
     }
     var historyShortcut: Shortcut {
-        didSet { storeShortcut(historyShortcut, key: "focale.shortcut.history") }
+        didSet {
+            storeShortcut(historyShortcut, key: "focale.shortcut.history")
+            onShortcutsChanged?()
+        }
     }
     var repeatShortcut: Shortcut {
-        didSet { storeShortcut(repeatShortcut, key: "focale.shortcut.repeat") }
+        didSet {
+            storeShortcut(repeatShortcut, key: "focale.shortcut.repeat")
+            onShortcutsChanged?()
+        }
     }
 
     init(defaults: UserDefaults = .standard) {

@@ -1,3 +1,4 @@
+import AppKit
 import CoreGraphics
 import Foundation
 import Testing
@@ -80,6 +81,27 @@ struct SensitiveDataTests {
     @Test("Texte neutre sans détection")
     func none() {
         #expect(SensitiveData.findings(in: "Bonjour, voici le rapport trimestriel.").isEmpty)
+    }
+}
+
+// MARK: - Raccourcis globaux (table Cocoa → Carbon).
+
+@Suite("Raccourcis globaux")
+struct HotKeyTests {
+    @Test("Conversion des modificateurs Cocoa vers Carbon")
+    func carbonModifiers() {
+        #expect(HotKeyService.carbonModifiers(for: [.command, .shift]) == (256 | 512))
+        #expect(HotKeyService.carbonModifiers(for: [.command, .option, .control, .shift]) == (256 | 512 | 2048 | 4096))
+        #expect(HotKeyService.carbonModifiers(for: []) == 0)
+    }
+
+    @Test("Le raccourci par défaut est Cmd + Maj + 5")
+    func defaultShortcut() {
+        let shortcut = Shortcut.defaultMain
+        let flags = NSEvent.ModifierFlags(rawValue: shortcut.modifierFlags)
+        #expect(flags.contains(.command) && flags.contains(.shift))
+        #expect(!flags.contains(.option) && !flags.contains(.control))
+        #expect(shortcut.characters == "5")
     }
 }
 

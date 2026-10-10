@@ -11,6 +11,8 @@ struct CaptureBarView: View {
     var onRepeatLast: () -> Void = {}
     var onOpenSettings: () -> Void = {}
     var onCancel: () -> Void = {}
+    /// Décompte du minuteur affiché dans la barre (nil hors décompte).
+    var countdown: Int? = nil
 
     @Namespace private var modeIndicator
 
@@ -115,7 +117,11 @@ struct CaptureBarView: View {
                 Image(systemName: "timer")
                     .font(.system(size: 15, weight: .medium))
                     .symbolRenderingMode(.hierarchical)
-                if let short = timer.shortLabel {
+                if let countdown {
+                    Text("\(countdown)")
+                        .font(.focaleBadge)
+                        .foregroundStyle(Color.focaleDanger)
+                } else if let short = timer.shortLabel {
                     Text(short)
                         .font(.focaleCaption)
                         .monospacedDigit()
