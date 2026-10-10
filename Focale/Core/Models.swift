@@ -1,10 +1,10 @@
 import AppKit
 import SwiftUI
 
-// MARK: - Modes de capture (F2).
+// MARK: - Type de sélection (F2) : ce que la souris choisit à l'écran.
 
-enum CaptureMode: String, CaseIterable, Identifiable {
-    case region, window, screen, video, scroll
+enum SelectionMode: String, CaseIterable, Identifiable {
+    case region, window, screen, scroll
 
     var id: String { rawValue }
 
@@ -13,7 +13,6 @@ enum CaptureMode: String, CaseIterable, Identifiable {
         case .region: String(localized: "Zone")
         case .window: String(localized: "Fenêtre")
         case .screen: String(localized: "Écran")
-        case .video: String(localized: "Vidéo")
         case .scroll: String(localized: "Défilement")
         }
     }
@@ -23,7 +22,6 @@ enum CaptureMode: String, CaseIterable, Identifiable {
         case .region: "rectangle.dashed"
         case .window: "macwindow"
         case .screen: "display"
-        case .video: "video"
         case .scroll: "arrow.up.and.down"
         }
     }
@@ -33,19 +31,65 @@ enum CaptureMode: String, CaseIterable, Identifiable {
         case .region: "1"
         case .window: "2"
         case .screen: "3"
-        case .video: "4"
-        case .scroll: "5"
+        case .scroll: "4"
         }
     }
 
     /// Infobulle : ce que fait le mode concrètement.
     var hint: String {
         switch self {
-        case .region: "Dessinez la zone à capturer"
-        case .window: "Survolez puis cliquez la fenêtre à capturer"
-        case .screen: "Cliquez pour capturer tout l'écran"
-        case .video: "Dessinez la zone à enregistrer, ou cliquez pour l'écran entier"
-        case .scroll: "Sélectionnez la page : Focale défile et assemble les bandes"
+        case .region: "glissez pour dessiner la zone exacte à capturer"
+        case .window: "survolez une fenêtre et cliquez pour la capturer"
+        case .screen: "un clic capture tout l'écran"
+        case .scroll: "sélectionnez la page : Focale défile et assemble la capture complète"
+        }
+    }
+
+    /// Curseur dédié : la souris annonce le mode avant même le premier clic.
+    var cursor: NSCursor {
+        switch self {
+        case .region, .scroll: .crosshair
+        case .window, .screen: .pointingHand
+        }
+    }
+
+    /// Peut servir de base à un enregistrement vidéo.
+    var supportsVideo: Bool { self == .region || self == .screen }
+}
+
+// MARK: - Type de capture : photo fixe ou vidéo.
+
+enum CaptureKind: String, CaseIterable, Identifiable {
+    case photo, video
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .photo: String(localized: "Photo")
+        case .video: String(localized: "Vidéo")
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .photo: "camera.fill"
+        case .video: "video.fill"
+        }
+    }
+
+    var keyHint: String {
+        switch self {
+        case .photo: "P"
+        case .video: "V"
+        }
+    }
+
+    /// Infobulle : ce que fait le type concrètement.
+    var hint: String {
+        switch self {
+        case .photo: "capture fixe de la sélection"
+        case .video: "enregistre la sélection en vidéo"
         }
     }
 }
@@ -81,6 +125,12 @@ enum Destination: String, CaseIterable, Identifiable {
         case .both: "Copie et enregistre"
         }
     }
+}
+
+// MARK: - Choix rapide de dossier depuis la barre.
+
+enum QuickFolder {
+    case desktop, documents, other
 }
 
 // MARK: - Minuteur (F7).

@@ -21,7 +21,6 @@
 		F0CA1E00000000000000008B /* DSComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000004B /* DSComponents.swift */; };
 		F0CA1E00000000000000008C /* CaptureBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000004C /* CaptureBarView.swift */; };
 		F0CA1E00000000000000008D /* SelectionOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000004D /* SelectionOverlayView.swift */; };
-		F0CA1E00000000000000008E /* PreviewToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000004E /* PreviewToastView.swift */; };
 		F0CA1E00000000000000008F /* EditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000004F /* EditorModel.swift */; };
 		F0CA1E000000000000000090 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000050 /* EditorView.swift */; };
 		F0CA1E000000000000000091 /* CanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000051 /* CanvasView.swift */; };
@@ -45,10 +44,11 @@
 		F0CA1E0000000000000000AD /* RecorderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000006D /* RecorderService.swift */; };
 		F0CA1E0000000000000000AE /* VideoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000006E /* VideoService.swift */; };
 		F0CA1E0000000000000000AF /* RecordingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000006F /* RecordingPanel.swift */; };
-		F0CA1E0000000000000000B0 /* VideoToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000070 /* VideoToastView.swift */; };
+		F0CA1E0000000000000000B0 /* CaptureToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000070 /* CaptureToastView.swift */; };
 		F0CA1E0000000000000000B1 /* ShotRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000071 /* ShotRecord.swift */; };
 		F0CA1E0000000000000000B2 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000072 /* AppIntents.swift */; };
 		F0CA1E0000000000000000B3 /* OnboardingPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000073 /* OnboardingPolicy.swift */; };
+		F0CA1E0000000000000000B4 /* PreviewWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000074 /* PreviewWindow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,7 +78,6 @@
 		F0CA1E00000000000000004B /* DSComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSComponents.swift; sourceTree = "<group>"; };
 		F0CA1E00000000000000004C /* CaptureBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureBarView.swift; sourceTree = "<group>"; };
 		F0CA1E00000000000000004D /* SelectionOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionOverlayView.swift; sourceTree = "<group>"; };
-		F0CA1E00000000000000004E /* PreviewToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewToastView.swift; sourceTree = "<group>"; };
 		F0CA1E00000000000000004F /* EditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorModel.swift; sourceTree = "<group>"; };
 		F0CA1E000000000000000050 /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
 		F0CA1E000000000000000051 /* CanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasView.swift; sourceTree = "<group>"; };
@@ -102,10 +101,11 @@
 		F0CA1E00000000000000006D /* RecorderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderService.swift; sourceTree = "<group>"; };
 		F0CA1E00000000000000006E /* VideoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoService.swift; sourceTree = "<group>"; };
 		F0CA1E00000000000000006F /* RecordingPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingPanel.swift; sourceTree = "<group>"; };
-		F0CA1E000000000000000070 /* VideoToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoToastView.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000070 /* CaptureToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureToastView.swift; sourceTree = "<group>"; };
 		F0CA1E000000000000000071 /* ShotRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotRecord.swift; sourceTree = "<group>"; };
 		F0CA1E000000000000000072 /* AppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 		F0CA1E000000000000000073 /* OnboardingPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPolicy.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000074 /* PreviewWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewWindow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,6 +163,7 @@
 				F0CA1E000000000000000024 /* Capture */,
 				F0CA1E000000000000000025 /* Recording */,
 				F0CA1E000000000000000026 /* Intents */,
+				F0CA1E000000000000000027 /* Preview */,
 			);
 			path = Focale;
 			sourceTree = "<group>";
@@ -249,11 +250,18 @@
 		F0CA1E00000000000000000D /* Toast */ = {
 			isa = PBXGroup;
 			children = (
-				F0CA1E00000000000000004E /* PreviewToastView.swift */,
+				F0CA1E000000000000000070 /* CaptureToastView.swift */,
 				F0CA1E000000000000000069 /* ToastPanel.swift */,
-				F0CA1E000000000000000070 /* VideoToastView.swift */,
 			);
 			path = Toast;
+			sourceTree = "<group>";
+		};
+		F0CA1E000000000000000027 /* Preview */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000074 /* PreviewWindow.swift */,
+			);
+			path = Preview;
 			sourceTree = "<group>";
 		};
 		F0CA1E00000000000000000E /* Editor */ = {
@@ -428,7 +436,6 @@
 				F0CA1E00000000000000008B /* DSComponents.swift in Sources */,
 				F0CA1E00000000000000008C /* CaptureBarView.swift in Sources */,
 				F0CA1E00000000000000008D /* SelectionOverlayView.swift in Sources */,
-				F0CA1E00000000000000008E /* PreviewToastView.swift in Sources */,
 				F0CA1E00000000000000008F /* EditorModel.swift in Sources */,
 				F0CA1E000000000000000090 /* EditorView.swift in Sources */,
 				F0CA1E000000000000000091 /* CanvasView.swift in Sources */,
@@ -449,10 +456,11 @@
 				F0CA1E0000000000000000AD /* RecorderService.swift in Sources */,
 				F0CA1E0000000000000000AE /* VideoService.swift in Sources */,
 				F0CA1E0000000000000000AF /* RecordingPanel.swift in Sources */,
-				F0CA1E0000000000000000B0 /* VideoToastView.swift in Sources */,
+				F0CA1E0000000000000000B0 /* CaptureToastView.swift in Sources */,
 				F0CA1E0000000000000000B1 /* ShotRecord.swift in Sources */,
 				F0CA1E0000000000000000B2 /* AppIntents.swift in Sources */,
 				F0CA1E0000000000000000B3 /* OnboardingPolicy.swift in Sources */,
+				F0CA1E0000000000000000B4 /* PreviewWindow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

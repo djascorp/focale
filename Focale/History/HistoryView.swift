@@ -5,7 +5,7 @@ import SwiftUI
 
 struct HistoryView: View {
     @Bindable var store: HistoryStore
-    var onAnnotate: (CapturedShot) -> Void = { _ in }
+    var onOpen: (CapturedShot) -> Void = { _ in }
 
     @State private var selectedID: CapturedShot.ID?
 
@@ -130,14 +130,10 @@ struct HistoryView: View {
         .padding(8)
         .background(.background.opacity(0.6), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .contentShape(Rectangle())
+        .onTapGesture(count: 2) { onOpen(shot) }
         .onTapGesture { selectedID = shot.id }
-        .onTapGesture(count: 2) { openShot(shot) }
         .contextMenu {
-            if shot.kind == .video {
-                Button("Ouvrir") { openShot(shot) }
-            } else {
-                Button("Annoter") { onAnnotate(shot) }
-            }
+            Button("Ouvrir l'aperçu") { onOpen(shot) }
             Button("Copier") { copyShot(shot) }
             Button(shot.pinned ? "Désépingler" : "Épingler") { store.togglePin(shot.id) }
             Divider()
@@ -165,14 +161,6 @@ struct HistoryView: View {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setData(data, forType: .png)
-    }
-
-    private func openShot(_ shot: CapturedShot) {
-        if shot.kind == .video, let url = shot.fileURL {
-            NSWorkspace.shared.open(url)
-        } else {
-            onAnnotate(shot)
-        }
     }
 }
 

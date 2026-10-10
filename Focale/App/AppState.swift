@@ -10,11 +10,28 @@ final class AppState {
     let settings: AppSettings
     let history: HistoryStore
 
-    var mode: CaptureMode = .region
+    var selection: SelectionMode = .region
+    var kind: CaptureKind = .photo
     var destination: Destination
     var timer: CaptureTimerOption = .off
     var lastRegion: CGRect?
     var editorShot: CapturedShot?
+
+    /// Les combinaisons invalides se rabattent sur un choix cohérent :
+    /// fenêtre/défilement en photo, vidéo sur zone ou écran.
+    func setSelection(_ newSelection: SelectionMode) {
+        selection = newSelection
+        if kind == .video, !newSelection.supportsVideo {
+            kind = .photo
+        }
+    }
+
+    func setKind(_ newKind: CaptureKind) {
+        kind = newKind
+        if newKind == .video, !selection.supportsVideo {
+            selection = .region
+        }
+    }
 
     /// Galerie de démonstration (la vraie répétition vit dans CaptureSession).
     var canRepeatLast: Bool { lastRegion != nil }
@@ -97,7 +114,12 @@ final class HistoryStore {
         reload()
     }
 
+    /// Supprime la capture : le fichier éventuel part à la corbeille, le
+    /// record SwiftData avec — « Supprimer » est honnête pour les deux types.
     func remove(_ id: CapturedShot.ID) {
+        if let url = shots.first(where: { $0.id == id })?.fileURL {
+            try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
+        }
         if let record = record(for: id) {
             context.delete(record)
             save()
@@ -153,6 +175,9 @@ final class HistoryStore {
         let unpinned = (try? context.fetch(descriptor)) ?? []
         if unpinned.count > 300 {
             for record in unpinned.dropFirst(300) {
+                if let url = record.fileURL {
+                    try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
+                }
                 context.delete(record)
             }
         }

@@ -54,9 +54,10 @@ struct ContentView: View {
                         Spacer()
                         HStack {
                             Spacer()
-                            PreviewToastView(
+                            CaptureToastView(
                                 shot: toast,
                                 autoDismiss: 5,
+                                onOpen: { demoToast = nil },
                                 onCopy: { demoToast = nil },
                                 onSave: { demoToast = nil },
                                 onAnnotate: {
@@ -92,7 +93,7 @@ struct ContentView: View {
         case .history:
             HistoryView(
                 store: appState.history,
-                onAnnotate: { shot in
+                onOpen: { shot in
                     appState.editorShot = shot
                     openWindow(id: "editor")
                 }
@@ -126,14 +127,17 @@ struct ContentView: View {
                     .background(.black.opacity(0.55), in: Capsule())
                     .padding(.bottom, 12)
                 CaptureBarView(
-                    mode: bindingMode,
+                    selection: bindingSelection,
+                    kind: bindingKind,
                     destination: bindingDestination,
                     timer: bindingTimer,
+                    folderName: "Bureau",
                     canRepeatLast: appState.canRepeatLast,
                     onCapture: demoCapture,
                     onRepeatLast: demoCapture,
                     onOpenSettings: { selection = .settings },
-                    onCancel: {}
+                    onCancel: {},
+                    onChooseFolder: { _ in }
                 )
                 .padding(.bottom, 48)
             }
@@ -189,7 +193,7 @@ struct ContentView: View {
                 Spacer()
                 HStack {
                     Spacer()
-                    PreviewToastView(shot: CapturedShot.mockSet()[0])
+                    CaptureToastView(shot: CapturedShot.mockSet()[0])
                         .padding(24)
                 }
             }
@@ -212,8 +216,12 @@ struct ContentView: View {
         Images.sampleDesktop(size: CGSize(width: 1400, height: 900))
     }
 
-    private var bindingMode: Binding<CaptureMode> {
-        Binding(get: { appState.mode }, set: { appState.mode = $0 })
+    private var bindingSelection: Binding<SelectionMode> {
+        Binding(get: { appState.selection }, set: { appState.setSelection($0) })
+    }
+
+    private var bindingKind: Binding<CaptureKind> {
+        Binding(get: { appState.kind }, set: { appState.setKind($0) })
     }
 
     private var bindingDestination: Binding<Destination> {

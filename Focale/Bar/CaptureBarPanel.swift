@@ -33,17 +33,26 @@ struct CaptureBarHostView: View {
 
     var body: some View {
         CaptureBarView(
-            mode: $appState.mode,
+            selection: Binding(
+                get: { appState.selection },
+                set: { appState.setSelection($0) }
+            ),
+            kind: Binding(
+                get: { appState.kind },
+                set: { appState.setKind($0) }
+            ),
             destination: $appState.destination,
             timer: $appState.timer,
+            folderName: session.folderDisplayName,
             canRepeatLast: session.canRepeatLast,
             onCapture: { session.commitFromBar() },
             onRepeatLast: { session.repeatLast() },
             onOpenSettings: { session.openSettings() },
             onCancel: { session.cancel() },
+            onChooseFolder: { session.chooseFolder($0) },
             countdown: session.countdown
         )
-        .onChange(of: appState.mode) { _, _ in
+        .onChange(of: appState.selection) { _, _ in
             session.refreshOverlayModes()
         }
     }

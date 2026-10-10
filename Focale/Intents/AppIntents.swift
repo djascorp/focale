@@ -7,9 +7,9 @@ final class FocaleIntentHandler {
     static let shared = FocaleIntentHandler()
     weak var session: CaptureSession?
 
-    func requestCapture(_ mode: CaptureMode) {
+    func requestCapture(_ selection: SelectionMode) {
         guard let session, !session.isActive else { return }
-        session.appState.mode = mode
+        session.appState.setSelection(selection)
         session.beginCapture()
     }
 

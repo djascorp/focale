@@ -1,6 +1,7 @@
 import AppKit
 import CoreGraphics
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: - Notifications vers les scènes SwiftUI (la barre des menus est toujours vivante).
 
@@ -26,6 +27,7 @@ final class CaptureSession {
     private let hotkeys = HotKeyService()
     private let capture = CaptureService()
     private let editor = EditorWindowController()
+    private let preview = PreviewWindowController()
     private let onboarding = OnboardingWindowController()
 
     var countdown: Int?
@@ -38,6 +40,7 @@ final class CaptureSession {
     private var toastPanel: ToastPanel?
     private var frontApp: NSRunningApplication?
     private var captureTask: Task<Void, Never>?
+    private var escapeMonitor: Any?
 
     private let recorder = RecorderService()
     private let scroller = ScrollCaptureService()
@@ -105,6 +108,7 @@ final class CaptureSession {
             return
         }
         isActive = true
+        installEscapeMonitor()
         frontApp = NSWorkspace.shared.frontmostApplication
         hideToast()
         Task { await capture.preload() }
@@ -144,7 +148,41 @@ final class CaptureSession {
         barPanel = nil
         hideScrollPanel()
         isActive = false
+        removeEscapeMonitor()
         reactivateFrontApp()
+    }
+
+    /// Fin de session commune : rend le moniteur Échap, rend la main à
+    /// l'application de devant.
+    private func endSession() {
+        isActive = false
+        removeEscapeMonitor()
+        reactivateFrontApp()
+    }
+
+    // MARK: Échap global (sélection, minuteur, défilement, enregistrement).
+
+    /// Intercepte Échap pendant toute la session active : couvre aussi le
+    /// décompte du minuteur et la capture défilante, où aucune fenêtre clé
+    /// ne reçoit le clavier.
+    private func installEscapeMonitor() {
+        guard escapeMonitor == nil else { return }
+        escapeMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard event.keyCode == 53, let self else { return event }
+            let handled = MainActor.assumeIsolated {
+                guard self.isActive || self.isRecording else { return false }
+                self.cancel()
+                return true
+            }
+            return handled ? nil : event
+        }
+    }
+
+    private func removeEscapeMonitor() {
+        if let escapeMonitor {
+            NSEvent.removeMonitor(escapeMonitor)
+        }
+        escapeMonitor = nil
     }
 
     private func reactivateFrontApp() {
@@ -163,13 +201,13 @@ final class CaptureSession {
             controller.onWindow = { [weak self] id in self?.commitWindow(id) }
             controller.onDisplay = { [weak self] in self?.commitDisplay(screen) }
             controller.onCancel = { [weak self] in self?.cancel() }
-            controller.show(mode: appState.mode)
+            controller.show(selection: appState.selection)
             return controller
         }
     }
 
     func refreshOverlayModes() {
-        overlays.forEach { $0.show(mode: appState.mode) }
+        overlays.forEach { $0.show(selection: appState.selection) }
     }
 
     private func showBar() {
@@ -179,7 +217,9 @@ final class CaptureSession {
         }
         let host = NSHostingView(rootView: CaptureBarHostView(appState: appState, session: self))
         let fitting = host.fittingSize
-        let width = max(fitting.width, 560)
+        // Largeur réelle du contenu (jamais replié sur deux lignes), plafonnée
+        // à l'écran pour les petits affichages.
+        let width = min(max(fitting.width, 700), screen.visibleFrame.width - 24)
         let height = max(fitting.height, 64)
         let frame = screen.visibleFrame
         let origin = restoredBarOrigin(
@@ -203,7 +243,18 @@ final class CaptureSession {
     func commitFromBar() {
         guard isActive else { return }
         let target = controllerForMouse() ?? overlays.first
-        switch appState.mode {
+        if appState.kind == .video {
+            // Vidéo : la zone tracée si présente, sinon l'écran visé.
+            if appState.selection == .region,
+               let rect = target?.selection, rect.width >= 4, rect.height >= 4,
+               let controller = target {
+                startRecording(rect: rect, on: controller.screen)
+            } else if let screen = target?.screen {
+                startRecording(rect: nil, on: screen)
+            }
+            return
+        }
+        switch appState.selection {
         case .region:
             if let rect = target?.selection, rect.width >= 4, rect.height >= 4, let controller = target {
                 commitRegion(rect, on: controller.screen)
@@ -220,12 +271,6 @@ final class CaptureSession {
             if let screen = target?.screen {
                 commitDisplay(screen)
             }
-        case .video:
-            if let rect = target?.selection, rect.width >= 4, rect.height >= 4, let controller = target {
-                startRecording(rect: rect, on: controller.screen)
-            } else if let screen = target?.screen {
-                startRecording(rect: nil, on: screen)
-            }
         case .scroll:
             if let rect = target?.selection, rect.width >= 50, rect.height >= 100, let controller = target {
                 beginScrollCapture(rect: rect, on: controller.screen)
@@ -237,11 +282,11 @@ final class CaptureSession {
 
     private func commitRegion(_ rect: CGRect, on screen: NSScreen) {
         guard isActive else { return }
-        if appState.mode == .video {
+        if appState.kind == .video {
             startRecording(rect: rect, on: screen)
             return
         }
-        if appState.mode == .scroll {
+        if appState.selection == .scroll {
             beginScrollCapture(rect: rect, on: screen)
             return
         }
@@ -270,6 +315,10 @@ final class CaptureSession {
 
     private func commitDisplay(_ screen: NSScreen) {
         guard isActive else { return }
+        if appState.kind == .video {
+            startRecording(rect: nil, on: screen)
+            return
+        }
         guard let target = CaptureService.target(for: screen) else {
             cancel()
             return
@@ -292,6 +341,10 @@ final class CaptureSession {
             saveBarPosition()
             barPanel?.orderOut(nil)
             barPanel = nil
+        } else {
+            // La barre reste visible pour le décompte : elle doit aussi
+            // rester la fenêtre clé pour qu'Échap puisse annuler.
+            barPanel?.makeKeyAndOrderFront(nil)
         }
         captureTask?.cancel()
         captureTask = Task { [weak self] in
@@ -326,8 +379,7 @@ final class CaptureSession {
             }
             finishCapture(image: cgImage)
         } catch {
-            isActive = false
-            reactivateFrontApp()
+            endSession()
             showError(error)
         }
     }
@@ -360,14 +412,14 @@ final class CaptureSession {
         if settings.shutterSound {
             playShutter()
         }
-        DestinationService.route(image: image, destination: appState.destination, settings: settings)
+        let savedURL = DestinationService.route(image: image, destination: appState.destination, settings: settings)
         let shot = CapturedShot(
             image: NSImage(cgImage: image, size: NSSize(width: image.width, height: image.height)),
-            name: settings.sampleFileName()
+            name: settings.sampleFileName(),
+            fileURL: savedURL
         )
         appState.history.add(shot)
-        isActive = false
-        reactivateFrontApp()
+        endSession()
         showToast(shot: shot)
     }
 
@@ -376,16 +428,24 @@ final class CaptureSession {
         guard !isActive, !isRecording, let last = lastCapture else { return }
         guard CGPreflightScreenCaptureAccess() else { return }
         isActive = true
+        installEscapeMonitor()
         frontApp = NSWorkspace.shared.frontmostApplication
         hideToast()
         runCapture(.region(displayID: last.displayID, rect: last.rect, scale: last.scale))
     }
 
-    // MARK: Miniature réelle.
+    // MARK: Miniature du résultat + fenêtre d'aperçu.
+
+    /// La miniature suit le curseur : elle apparaît sur l'écran où la
+    /// capture vient d'avoir lieu, pas seulement sur l'écran principal.
+    private var toastScreen: NSScreen? {
+        let mouse = NSEvent.mouseLocation
+        return NSScreen.screens.first { $0.frame.contains(mouse) } ?? NSScreen.main
+    }
 
     private func showToast(shot: CapturedShot) {
         hideToast()
-        guard let screen = NSScreen.main else { return }
+        guard let screen = toastScreen else { return }
         let size = NSSize(width: 232, height: 176)
         let origin = CGPoint(
             x: screen.visibleFrame.maxX - size.width - 16,
@@ -393,14 +453,16 @@ final class CaptureSession {
         )
         let panel = ToastPanel(contentRect: NSRect(origin: origin, size: size))
         let id = shot.id
-        panel.contentView = NSHostingView(rootView: PreviewToastView(
+        panel.contentView = NSHostingView(rootView: CaptureToastView(
             shot: shot,
             autoDismiss: appState.settings.toastDuration,
-            onCopy: { [weak self] in MainActor.assumeIsolated { self?.copyToastShot(id) } },
-            onSave: { [weak self] in MainActor.assumeIsolated { self?.saveToastShot(id) } },
+            onOpen: { [weak self] in MainActor.assumeIsolated { self?.openPreview(id) } },
+            onCopy: { [weak self] in MainActor.assumeIsolated { self?.copyShot(id) } },
+            onSave: { [weak self] in MainActor.assumeIsolated { self?.saveShot(id) } },
             onAnnotate: { [weak self] in MainActor.assumeIsolated { self?.openEditor(for: id) } },
-            onShare: { [weak self] in MainActor.assumeIsolated { self?.shareToastShot(id) } },
-            onDelete: { [weak self] in MainActor.assumeIsolated { self?.deleteToastShot(id) } },
+            onShare: { [weak self] in MainActor.assumeIsolated { self?.shareShot(id) } },
+            onReveal: { [weak self] in MainActor.assumeIsolated { self?.revealShot(id) } },
+            onDelete: { [weak self] in MainActor.assumeIsolated { self?.deleteShot(id) } },
             onDismiss: { [weak self] in MainActor.assumeIsolated { self?.hideToast() } }
         ))
         toastPanel = panel
@@ -412,29 +474,116 @@ final class CaptureSession {
         toastPanel = nil
     }
 
-    private func toastImage(for id: CapturedShot.ID) -> CGImage? {
-        guard let shot = appState.history.shots.first(where: { $0.id == id }) else { return nil }
-        return Images.cgImage(from: shot.image)
+    private func shot(for id: CapturedShot.ID) -> CapturedShot? {
+        appState.history.shots.first { $0.id == id }
     }
 
-    private func copyToastShot(_ id: CapturedShot.ID) {
-        guard let image = toastImage(for: id) else { return }
-        DestinationService.copy(image)
+    /// Ouvre la fenêtre d'aperçu du résultat (clic miniature, historique).
+    func openPreview(_ id: CapturedShot.ID) {
+        guard let shot = shot(for: id) else { return }
+        hideToast()
+        let hasFile = shot.fileURL != nil
+        let isVideo = shot.kind == .video
+        preview.show(shot: shot, actions: PreviewActions(
+            onAnnotate: isVideo ? nil : { [weak self] in
+                MainActor.assumeIsolated {
+                    self?.preview.close()
+                    self?.openEditor(for: id)
+                }
+            },
+            onSaveAs: { [weak self] in MainActor.assumeIsolated { self?.saveShotAs(id) } },
+            onCopy: { [weak self] in MainActor.assumeIsolated { self?.copyShot(id) } },
+            onShare: { [weak self] in MainActor.assumeIsolated { self?.shareShot(id) } },
+            onReveal: hasFile ? { [weak self] in MainActor.assumeIsolated { self?.revealShot(id) } } : nil,
+            onDelete: { [weak self] in
+                MainActor.assumeIsolated {
+                    self?.preview.close()
+                    self?.appState.history.remove(id)
+                }
+            },
+            onClose: { [weak self] in MainActor.assumeIsolated { self?.preview.close() } }
+        ))
     }
 
-    private func saveToastShot(_ id: CapturedShot.ID) {
-        guard let image = toastImage(for: id) else { return }
-        DestinationService.save(image, settings: appState.settings)
+    private func copyShot(_ id: CapturedShot.ID) {
+        guard let shot = shot(for: id) else { return }
+        switch shot.kind {
+        case .image:
+            if let cgImage = Images.cgImage(from: shot.image) {
+                DestinationService.copy(cgImage)
+            }
+        case .video:
+            if let url = shot.fileURL {
+                let pasteboard = NSPasteboard.general
+                pasteboard.clearContents()
+                pasteboard.writeObjects([url as NSURL])
+            }
+        }
     }
 
-    private func shareToastShot(_ id: CapturedShot.ID) {
-        guard let image = toastImage(for: id),
-              let view = toastPanel?.contentView,
-              let shot = appState.history.shots.first(where: { $0.id == id }) else { return }
-        DestinationService.share(image, name: shot.name, from: view)
+    /// Enregistrement rapide au dossier par défaut (image seule).
+    private func saveShot(_ id: CapturedShot.ID) {
+        guard let shot = shot(for: id), shot.kind == .image else { return }
+        if let cgImage = Images.cgImage(from: shot.image) {
+            DestinationService.save(cgImage, settings: appState.settings)
+        }
     }
 
-    private func deleteToastShot(_ id: CapturedShot.ID) {
+    /// « Enregistrer sous… » : l'utilisateur choisit dossier, nom et format.
+    func saveShotAs(_ id: CapturedShot.ID) {
+        guard let shot = shot(for: id) else { return }
+        let panel = NSSavePanel()
+        panel.directoryURL = URL(fileURLWithPath: appState.settings.saveFolderPath, isDirectory: true)
+        switch shot.kind {
+        case .image:
+            panel.allowedContentTypes = [.png, .jpeg]
+            panel.nameFieldStringValue = shot.name
+            guard panel.runModal() == .OK, let url = panel.url else { return }
+            let format: ImageFormat = ["jpg", "jpeg"].contains(url.pathExtension.lowercased()) ? .jpeg : .png
+            do {
+                guard let data = Images.encoded(shot.image, format: format) else {
+                    throw CaptureError.cropFailed
+                }
+                try data.write(to: url)
+            } catch {
+                showError(error)
+            }
+        case .video:
+            guard let source = shot.fileURL else { return }
+            panel.allowedContentTypes = [UTType(filenameExtension: source.pathExtension) ?? .mpeg4Movie]
+            panel.nameFieldStringValue = source.lastPathComponent
+            guard panel.runModal() == .OK, let url = panel.url else { return }
+            do {
+                try FileManager.default.copyItem(at: source, to: url)
+            } catch {
+                showError(error)
+            }
+        }
+    }
+
+    private func shareShot(_ id: CapturedShot.ID) {
+        guard let shot = shot(for: id),
+              let view = toastPanel?.contentView ?? preview.contentView else { return }
+        switch shot.kind {
+        case .image:
+            if let cgImage = Images.cgImage(from: shot.image) {
+                DestinationService.share(cgImage, name: shot.name, from: view)
+            }
+        case .video:
+            if let url = shot.fileURL {
+                NSSharingServicePicker(items: [url])
+                    .show(relativeTo: .zero, of: view, preferredEdge: .minY)
+            }
+        }
+    }
+
+    private func revealShot(_ id: CapturedShot.ID) {
+        guard let url = shot(for: id)?.fileURL else { return }
+        NSWorkspace.shared.activateFileViewerSelecting([url])
+    }
+
+    private func deleteShot(_ id: CapturedShot.ID) {
+        // HistoryStore.remove met le fichier éventuel à la corbeille.
         appState.history.remove(id)
         hideToast()
     }
@@ -442,8 +591,9 @@ final class CaptureSession {
     // MARK: Édition.
 
     private func openEditor(for id: CapturedShot.ID) {
-        guard let shot = appState.history.shots.first(where: { $0.id == id }) else { return }
+        guard let shot = shot(for: id) else { return }
         hideToast()
+        preview.close()
         editor.show(
             shot: shot,
             onDone: { [weak self] image in self?.finishEditing(id: id, image: image) },
@@ -453,11 +603,20 @@ final class CaptureSession {
 
     private func finishEditing(id: CapturedShot.ID, image: NSImage) {
         appState.history.replaceImage(of: id, with: image)
-        if let cgImage = Images.cgImage(from: image) {
-            DestinationService.route(image: cgImage, destination: appState.destination, settings: appState.settings)
+        // Mise à jour en place : presse-papiers rafraîchi, fichier existant
+        // remplacé — jamais de second fichier en double.
+        if appState.destination == .clipboard || appState.destination == .both,
+           let cgImage = Images.cgImage(from: image) {
+            DestinationService.copy(cgImage)
         }
-        if let shot = appState.history.shots.first(where: { $0.id == id }) {
-            showToast(shot: shot)
+        if let url = shot(for: id)?.fileURL {
+            let format: ImageFormat = ["jpg", "jpeg"].contains(url.pathExtension.lowercased()) ? .jpeg : .png
+            if let data = Images.encoded(image, format: format) {
+                try? data.write(to: url)
+            }
+        }
+        if let updated = shot(for: id) {
+            showToast(shot: updated)
         }
     }
 
@@ -493,8 +652,7 @@ final class CaptureSession {
                 isRecording = true
                 showRecordingPanel(fileName: fileName)
             } catch {
-                isActive = false
-                reactivateFrontApp()
+                endSession()
                 showError(error)
             }
         }
@@ -508,16 +666,14 @@ final class CaptureSession {
             guard let self else { return }
             let tempURL = await recorder.stop()
             guard let tempURL else {
-                isActive = false
-                reactivateFrontApp()
+                endSession()
                 return
             }
             do {
                 let finalURL = try await finalizeRecording(tempURL: tempURL)
                 finishRecording(url: finalURL)
             } catch {
-                isActive = false
-                reactivateFrontApp()
+                endSession()
                 showError(error)
             }
         }
@@ -577,9 +733,8 @@ final class CaptureSession {
                 pasteboard.clearContents()
                 pasteboard.writeObjects([url as NSURL])
             }
-            isActive = false
-            reactivateFrontApp()
-            showVideoToast(shot: shot)
+            endSession()
+            showToast(shot: shot)
         }
     }
 
@@ -605,56 +760,6 @@ final class CaptureSession {
     private func hideRecordingPanel() {
         recordingPanel?.orderOut(nil)
         recordingPanel = nil
-    }
-
-    private func showVideoToast(shot: CapturedShot) {
-        hideToast()
-        guard let screen = NSScreen.main else { return }
-        let size = NSSize(width: 232, height: 176)
-        let origin = CGPoint(
-            x: screen.visibleFrame.maxX - size.width - 16,
-            y: screen.visibleFrame.minY + 16
-        )
-        let panel = ToastPanel(contentRect: NSRect(origin: origin, size: size))
-        let id = shot.id
-        panel.contentView = NSHostingView(rootView: VideoToastView(
-            shot: shot,
-            autoDismiss: appState.settings.toastDuration,
-            onPlay: { [weak self] in MainActor.assumeIsolated { self?.playToastVideo(id) } },
-            onShare: { [weak self] in MainActor.assumeIsolated { self?.shareToastVideo(id) } },
-            onReveal: { [weak self] in MainActor.assumeIsolated { self?.revealToastVideo(id) } },
-            onDelete: { [weak self] in MainActor.assumeIsolated { self?.deleteToastVideo(id) } },
-            onDismiss: { [weak self] in MainActor.assumeIsolated { self?.hideToast() } }
-        ))
-        toastPanel = panel
-        panel.orderFrontRegardless()
-    }
-
-    private func videoURL(for id: CapturedShot.ID) -> URL? {
-        appState.history.shots.first { $0.id == id }?.fileURL
-    }
-
-    private func playToastVideo(_ id: CapturedShot.ID) {
-        guard let url = videoURL(for: id) else { return }
-        NSWorkspace.shared.open(url)
-    }
-
-    private func shareToastVideo(_ id: CapturedShot.ID) {
-        guard let url = videoURL(for: id), let view = toastPanel?.contentView else { return }
-        NSSharingServicePicker(items: [url]).show(relativeTo: .zero, of: view, preferredEdge: .minY)
-    }
-
-    private func revealToastVideo(_ id: CapturedShot.ID) {
-        guard let url = videoURL(for: id) else { return }
-        NSWorkspace.shared.activateFileViewerSelecting([url])
-    }
-
-    private func deleteToastVideo(_ id: CapturedShot.ID) {
-        if let url = videoURL(for: id) {
-            try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
-        }
-        appState.history.remove(id)
-        hideToast()
     }
 
     // MARK: Capture défilante.
@@ -696,8 +801,7 @@ final class CaptureSession {
                 teardown()
             } catch {
                 hideScrollPanel()
-                isActive = false
-                reactivateFrontApp()
+                endSession()
                 if (error as? ScrollError) == .accessibilityDenied {
                     openAccessibilitySettings()
                 }
@@ -733,6 +837,51 @@ final class CaptureSession {
     private func openAccessibilitySettings() {
         if let url = URL(string: "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility") {
             NSWorkspace.shared.open(url)
+        }
+    }
+
+    // MARK: Dossier de destination (choix rapide depuis la barre).
+
+    /// Nom court du dossier courant, pour l'étiquette de la barre.
+    var folderDisplayName: String {
+        let path = appState.settings.saveFolderPath
+        let desktop = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first?.path
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.path
+        if path == desktop { return "Bureau" }
+        if path == documents { return "Documents" }
+        let name = URL(fileURLWithPath: path).lastPathComponent
+        return name.isEmpty ? "Dossier" : name
+    }
+
+    /// Applique un dossier rapide ; choisir un dossier implique la
+    /// destination « Fichier » si l'on était en presse-papiers seul.
+    func chooseFolder(_ choice: QuickFolder) {
+        let fileManager = FileManager.default
+        var didChange = false
+        switch choice {
+        case .desktop:
+            if let url = fileManager.urls(for: .desktopDirectory, in: .userDomainMask).first {
+                appState.settings.saveFolderPath = url.path
+                didChange = true
+            }
+        case .documents:
+            if let url = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+                appState.settings.saveFolderPath = url.path
+                didChange = true
+            }
+        case .other:
+            let panel = NSOpenPanel()
+            panel.canChooseFiles = false
+            panel.canChooseDirectories = true
+            panel.canCreateDirectories = true
+            panel.message = "Choisir le dossier d'enregistrement des captures"
+            if panel.runModal() == .OK, let url = panel.url {
+                appState.settings.saveFolderPath = url.path
+                didChange = true
+            }
+        }
+        if didChange, appState.destination == .clipboard {
+            appState.destination = .file
         }
     }
 

@@ -44,11 +44,11 @@ final class OverlayController {
         panel = OverlayPanel(screen: screen)
     }
 
-    func show(mode: CaptureMode) {
-        selection = nil
+    func show(selection: SelectionMode) {
+        self.selection = nil
         highlightedWindow = nil
-        switch mode {
-        case .region, .video, .scroll:
+        switch selection {
+        case .region, .scroll:
             panel.contentView = NSHostingView(rootView: RegionHostView(controller: self))
         case .window:
             panel.contentView = NSHostingView(rootView: WindowHostView(controller: self))
@@ -215,13 +215,7 @@ struct WindowHighlightView: View {
             }
             return .ignored
         }
-        .onHover { hovering in
-            if hovering {
-                NSCursor.crosshair.push()
-            } else {
-                NSCursor.pop()
-            }
-        }
+        .captureCursor(.pointingHand)
     }
 
     private func updateHighlight() {
@@ -278,9 +272,16 @@ struct ScreenClickView: View {
             }
             return .ignored
         }
-        .onHover { hovering in
+        .captureCursor(.pointingHand)
+    }
+}
+
+private extension View {
+    /// Le curseur annonce le mode de sélection (croix = tracé, main = clic).
+    func captureCursor(_ cursor: NSCursor) -> some View {
+        onHover { hovering in
             if hovering {
-                NSCursor.crosshair.push()
+                cursor.push()
             } else {
                 NSCursor.pop()
             }

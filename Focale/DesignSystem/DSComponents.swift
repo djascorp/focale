@@ -33,6 +33,7 @@ struct FocaleAccentButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.focaleLabel)
+            .lineLimit(1)
             .foregroundStyle(.white)
             .padding(.horizontal, 16)
             .frame(height: 36)

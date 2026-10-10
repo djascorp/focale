@@ -27,6 +27,7 @@ struct FocaleApp: App {
         Window("Historique", id: "history") {
             HistoryWindowHost()
                 .environment(appState)
+                .environment(session)
         }
         .defaultSize(width: 900, height: 620)
 
@@ -100,16 +101,14 @@ private struct MenuBarContent: View {
 
 private struct HistoryWindowHost: View {
     @Environment(AppState.self) private var appState
+    @Environment(CaptureSession.self) private var session
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
 
     var body: some View {
         HistoryView(
             store: appState.history,
-            onAnnotate: { shot in
-                appState.editorShot = shot
-                openWindow(id: "editor")
-            }
+            onOpen: { shot in session.openPreview(shot.id) }
         )
         .frame(minWidth: 640, minHeight: 420)
     }
