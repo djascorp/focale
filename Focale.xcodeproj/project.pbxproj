@@ -1,0 +1,542 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F0CA1E000000000000000080 /* FocaleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000040 /* FocaleApp.swift */; };
+		F0CA1E000000000000000081 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000041 /* ContentView.swift */; };
+		F0CA1E000000000000000082 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000042 /* AppState.swift */; };
+		F0CA1E000000000000000083 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000043 /* AppSettings.swift */; };
+		F0CA1E000000000000000084 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000044 /* Models.swift */; };
+		F0CA1E000000000000000085 /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000045 /* Geometry.swift */; };
+		F0CA1E000000000000000086 /* Images.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000046 /* Images.swift */; };
+		F0CA1E000000000000000087 /* SensitiveData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000047 /* SensitiveData.swift */; };
+		F0CA1E000000000000000088 /* DSColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000048 /* DSColor.swift */; };
+		F0CA1E000000000000000089 /* DSType.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000049 /* DSType.swift */; };
+		F0CA1E00000000000000008A /* DSMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000004A /* DSMotion.swift */; };
+		F0CA1E00000000000000008B /* DSComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000004B /* DSComponents.swift */; };
+		F0CA1E00000000000000008C /* CaptureBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000004C /* CaptureBarView.swift */; };
+		F0CA1E00000000000000008D /* SelectionOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000004D /* SelectionOverlayView.swift */; };
+		F0CA1E00000000000000008E /* PreviewToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000004E /* PreviewToastView.swift */; };
+		F0CA1E00000000000000008F /* EditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E00000000000000004F /* EditorModel.swift */; };
+		F0CA1E000000000000000090 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000050 /* EditorView.swift */; };
+		F0CA1E000000000000000091 /* CanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000051 /* CanvasView.swift */; };
+		F0CA1E000000000000000092 /* InspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000052 /* InspectorView.swift */; };
+		F0CA1E000000000000000093 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000053 /* HistoryView.swift */; };
+		F0CA1E000000000000000094 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000054 /* SettingsView.swift */; };
+		F0CA1E000000000000000095 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000055 /* OnboardingView.swift */; };
+		F0CA1E0000000000000000A0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000060 /* Assets.xcassets */; };
+		F0CA1E0000000000000000A1 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000061 /* Localizable.xcstrings */; };
+		F0CA1E0000000000000000A2 /* FocaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000062 /* FocaleTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F0CA1E000000000000000016 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F0CA1E000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F0CA1E000000000000000014;
+			remoteInfo = Focale;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F0CA1E000000000000000030 /* Focale.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Focale.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F0CA1E000000000000000031 /* FocaleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FocaleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F0CA1E000000000000000040 /* FocaleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocaleApp.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000041 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000042 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000043 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000044 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000045 /* Geometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000046 /* Images.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Images.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000047 /* SensitiveData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensitiveData.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000048 /* DSColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSColor.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000049 /* DSType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSType.swift; sourceTree = "<group>"; };
+		F0CA1E00000000000000004A /* DSMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSMotion.swift; sourceTree = "<group>"; };
+		F0CA1E00000000000000004B /* DSComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSComponents.swift; sourceTree = "<group>"; };
+		F0CA1E00000000000000004C /* CaptureBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureBarView.swift; sourceTree = "<group>"; };
+		F0CA1E00000000000000004D /* SelectionOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionOverlayView.swift; sourceTree = "<group>"; };
+		F0CA1E00000000000000004E /* PreviewToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewToastView.swift; sourceTree = "<group>"; };
+		F0CA1E00000000000000004F /* EditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorModel.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000050 /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000051 /* CanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasView.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000052 /* InspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorView.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000053 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000054 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000055 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000060 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F0CA1E000000000000000061 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		F0CA1E000000000000000062 /* FocaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocaleTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F0CA1E000000000000000019 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F0CA1E00000000000000001C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F0CA1E000000000000000005 /* Focale */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000007 /* Focale */,
+				F0CA1E000000000000000013 /* FocaleTests */,
+				F0CA1E000000000000000006 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F0CA1E000000000000000006 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000030 /* Focale.app */,
+				F0CA1E000000000000000031 /* FocaleTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F0CA1E000000000000000007 /* Focale */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000040 /* FocaleApp.swift */,
+				F0CA1E000000000000000041 /* ContentView.swift */,
+				F0CA1E000000000000000008 /* App */,
+				F0CA1E000000000000000009 /* Core */,
+				F0CA1E00000000000000000A /* DesignSystem */,
+				F0CA1E00000000000000000B /* Bar */,
+				F0CA1E00000000000000000C /* Overlay */,
+				F0CA1E00000000000000000D /* Toast */,
+				F0CA1E00000000000000000E /* Editor */,
+				F0CA1E00000000000000000F /* History */,
+				F0CA1E000000000000000010 /* Settings */,
+				F0CA1E000000000000000011 /* Onboarding */,
+				F0CA1E000000000000000012 /* Resources */,
+			);
+			path = Focale;
+			sourceTree = "<group>";
+		};
+		F0CA1E000000000000000008 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000042 /* AppState.swift */,
+				F0CA1E000000000000000043 /* AppSettings.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		F0CA1E000000000000000009 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000044 /* Models.swift */,
+				F0CA1E000000000000000045 /* Geometry.swift */,
+				F0CA1E000000000000000046 /* Images.swift */,
+				F0CA1E000000000000000047 /* SensitiveData.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		F0CA1E00000000000000000A /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000048 /* DSColor.swift */,
+				F0CA1E000000000000000049 /* DSType.swift */,
+				F0CA1E00000000000000004A /* DSMotion.swift */,
+				F0CA1E00000000000000004B /* DSComponents.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		F0CA1E00000000000000000B /* Bar */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E00000000000000004C /* CaptureBarView.swift */,
+			);
+			path = Bar;
+			sourceTree = "<group>";
+		};
+		F0CA1E00000000000000000C /* Overlay */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E00000000000000004D /* SelectionOverlayView.swift */,
+			);
+			path = Overlay;
+			sourceTree = "<group>";
+		};
+		F0CA1E00000000000000000D /* Toast */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E00000000000000004E /* PreviewToastView.swift */,
+			);
+			path = Toast;
+			sourceTree = "<group>";
+		};
+		F0CA1E00000000000000000E /* Editor */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E00000000000000004F /* EditorModel.swift */,
+				F0CA1E000000000000000050 /* EditorView.swift */,
+				F0CA1E000000000000000051 /* CanvasView.swift */,
+				F0CA1E000000000000000052 /* InspectorView.swift */,
+			);
+			path = Editor;
+			sourceTree = "<group>";
+		};
+		F0CA1E00000000000000000F /* History */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000053 /* HistoryView.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		F0CA1E000000000000000010 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000054 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		F0CA1E000000000000000011 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000055 /* OnboardingView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		F0CA1E000000000000000012 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000060 /* Assets.xcassets */,
+				F0CA1E000000000000000061 /* Localizable.xcstrings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		F0CA1E000000000000000013 /* FocaleTests */ = {
+			isa = PBXGroup;
+			children = (
+				F0CA1E000000000000000062 /* FocaleTests.swift */,
+			);
+			path = FocaleTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F0CA1E000000000000000014 /* Focale */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F0CA1E00000000000000001E /* Build configuration list for PBXNativeTarget "Focale" */;
+			buildPhases = (
+				F0CA1E000000000000000018 /* Sources */,
+				F0CA1E000000000000000019 /* Frameworks */,
+				F0CA1E00000000000000001A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Focale;
+			packageProductDependencies = (
+			);
+			productName = Focale;
+			productReference = F0CA1E000000000000000030 /* Focale.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F0CA1E000000000000000015 /* FocaleTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F0CA1E000000000000000021 /* Build configuration list for PBXNativeTarget "FocaleTests" */;
+			buildPhases = (
+				F0CA1E00000000000000001B /* Sources */,
+				F0CA1E00000000000000001C /* Frameworks */,
+				F0CA1E00000000000000001D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F0CA1E000000000000000017 /* PBXTargetDependency */,
+			);
+			name = FocaleTests;
+			productName = FocaleTests;
+			productReference = F0CA1E000000000000000031 /* FocaleTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F0CA1E000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1700;
+				LastUpgradeCheck = 1700;
+				TargetAttributes = {
+					F0CA1E000000000000000014 = {
+						CreatedOnToolsVersion = 17.0;
+					};
+					F0CA1E000000000000000015 = {
+						CreatedOnToolsVersion = 17.0;
+						TestTargetID = F0CA1E000000000000000014;
+					};
+				};
+			};
+			buildConfigurationList = F0CA1E000000000000000002 /* Build configuration list for PBXProject "Focale" */;
+			compatibilityVersion = "Xcode 12.0";
+			developmentRegion = fr;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				fr,
+			);
+			mainGroup = F0CA1E000000000000000005;
+			productRefGroup = F0CA1E000000000000000006 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F0CA1E000000000000000014 /* Focale */,
+				F0CA1E000000000000000015 /* FocaleTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F0CA1E00000000000000001A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F0CA1E0000000000000000A0 /* Assets.xcassets in Resources */,
+				F0CA1E0000000000000000A1 /* Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F0CA1E00000000000000001D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F0CA1E000000000000000018 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F0CA1E000000000000000080 /* FocaleApp.swift in Sources */,
+				F0CA1E000000000000000081 /* ContentView.swift in Sources */,
+				F0CA1E000000000000000082 /* AppState.swift in Sources */,
+				F0CA1E000000000000000083 /* AppSettings.swift in Sources */,
+				F0CA1E000000000000000084 /* Models.swift in Sources */,
+				F0CA1E000000000000000085 /* Geometry.swift in Sources */,
+				F0CA1E000000000000000086 /* Images.swift in Sources */,
+				F0CA1E000000000000000087 /* SensitiveData.swift in Sources */,
+				F0CA1E000000000000000088 /* DSColor.swift in Sources */,
+				F0CA1E000000000000000089 /* DSType.swift in Sources */,
+				F0CA1E00000000000000008A /* DSMotion.swift in Sources */,
+				F0CA1E00000000000000008B /* DSComponents.swift in Sources */,
+				F0CA1E00000000000000008C /* CaptureBarView.swift in Sources */,
+				F0CA1E00000000000000008D /* SelectionOverlayView.swift in Sources */,
+				F0CA1E00000000000000008E /* PreviewToastView.swift in Sources */,
+				F0CA1E00000000000000008F /* EditorModel.swift in Sources */,
+				F0CA1E000000000000000090 /* EditorView.swift in Sources */,
+				F0CA1E000000000000000091 /* CanvasView.swift in Sources */,
+				F0CA1E000000000000000092 /* InspectorView.swift in Sources */,
+				F0CA1E000000000000000093 /* HistoryView.swift in Sources */,
+				F0CA1E000000000000000094 /* SettingsView.swift in Sources */,
+				F0CA1E000000000000000095 /* OnboardingView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F0CA1E00000000000000001B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F0CA1E0000000000000000A2 /* FocaleTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F0CA1E000000000000000017 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F0CA1E000000000000000014 /* Focale */;
+			targetProxy = F0CA1E000000000000000016 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		F0CA1E000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+			};
+			name = Debug;
+		};
+		F0CA1E000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+			};
+			name = Release;
+		};
+		F0CA1E00000000000000001F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_TESTABILITY = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Focale;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				PRODUCT_BUNDLE_IDENTIFIER = com.focale.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		F0CA1E000000000000000020 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Focale;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.focale.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		F0CA1E000000000000000022 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				PRODUCT_BUNDLE_IDENTIFIER = com.focale.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Focale.app/Contents/MacOS/Focale";
+			};
+			name = Debug;
+		};
+		F0CA1E000000000000000023 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.focale.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Focale.app/Contents/MacOS/Focale";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F0CA1E000000000000000002 /* Build configuration list for PBXProject "Focale" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F0CA1E000000000000000003 /* Debug */,
+				F0CA1E000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F0CA1E00000000000000001E /* Build configuration list for PBXNativeTarget "Focale" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F0CA1E00000000000000001F /* Debug */,
+				F0CA1E000000000000000020 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F0CA1E000000000000000021 /* Build configuration list for PBXNativeTarget "FocaleTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F0CA1E000000000000000022 /* Debug */,
+				F0CA1E000000000000000023 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F0CA1E000000000000000001 /* Project object */;
+}
