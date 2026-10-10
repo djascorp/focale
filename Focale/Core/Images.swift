@@ -104,6 +104,18 @@ enum Images {
         return rep.representation(using: .png, properties: [:])
     }
 
+    /// Encodage export selon le format (PNG sans perte, JPEG léger).
+    static func encoded(_ image: NSImage, format: ImageFormat) -> Data? {
+        guard let tiff = image.tiffRepresentation,
+              let rep = NSBitmapImageRep(data: tiff) else { return nil }
+        switch format {
+        case .png:
+            return rep.representation(using: .png, properties: [:])
+        case .jpeg:
+            return rep.representation(using: .jpeg, properties: [.compressionFactor: 0.92])
+        }
+    }
+
     static func itemProvider(for image: NSImage, name: String) -> NSItemProvider {
         let provider = NSItemProvider()
         provider.suggestedName = name
