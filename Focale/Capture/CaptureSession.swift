@@ -385,26 +385,41 @@ final class CaptureSession {
     }
 
     private func captureWindowOrFallback(id: CGWindowID) async throws -> CGImage {
-        if let frame = WindowLookup.frame(of: id),
-           let display = NSScreen.screens.first(where: { $0.frame.intersects(frame) }),
-           let target = CaptureService.target(for: display) {
-            let pixelSize = Geometry.pixelSize(points: frame.size, scale: target.scale)
-            do {
-                let image = try await capture.captureWindow(windowID: id, pixelSize: pixelSize)
-                // Certaines fenêtres rendent une image vide : repli sur la zone.
-                if image.width >= 2 && image.height >= 2 {
-                    return image
-                }
-            } catch {}
-                let local = CGRect(
-                    x: frame.minX - display.frame.minX,
-                    y: display.frame.maxY - frame.maxY,
-                    width: frame.width,
-                    height: frame.height
-                ).intersection(CGRect(origin: .zero, size: display.frame.size))
-                return try await capture.captureRegion(displayID: target.displayID, rect: local, scale: target.scale)
+        guard let frame = WindowLookup.frame(of: id),
+              let display = NSScreen.screens.first(where: { $0.frame.intersects(frame) }),
+              let target = CaptureService.target(for: display) else {
+            throw CaptureError.windowNotFound
         }
-        throw CaptureError.windowNotFound
+        // Zone locale de la fenêtre, barre de titre comprise (bornes CGWindow,
+        // identiques au cadre dessiné au survol).
+        let local = CGRect(
+            x: frame.minX - display.frame.minX,
+            y: display.frame.maxY - frame.maxY,
+            width: frame.width,
+            height: frame.height
+        ).intersection(CGRect(origin: .zero, size: display.frame.size))
+        guard !local.isNull, local.width >= 2, local.height >= 2 else {
+            throw CaptureError.windowNotFound
+        }
+        // Capture principale : découpe écran sur le cadre complet — le header
+        // est inclus, exactement ce que le survol promet. Valable quand la
+        // fenêtre est au premier plan (rien ne la recouvre à l'écran).
+        let center = CGPoint(x: frame.midX, y: frame.midY)
+        if WindowLookup.topWindow(at: center)?.id == id,
+           let image = try? await capture.captureRegion(
+               displayID: target.displayID, rect: local, scale: target.scale
+           ),
+           image.width >= 2, image.height >= 2 {
+            return image
+        }
+        // Repli 1 : fenêtre occultée — SC rend la fenêtre elle-même, mais
+        // sans barre de titre et à sa taille native (pas d'étirement).
+        if let image = try? await capture.captureWindow(windowID: id, scale: target.scale),
+           image.width >= 2, image.height >= 2 {
+            return image
+        }
+        // Repli 2 : la zone écran quoi qu'il arrive.
+        return try await capture.captureRegion(displayID: target.displayID, rect: local, scale: target.scale)
     }
 
     private func finishCapture(image: CGImage) {

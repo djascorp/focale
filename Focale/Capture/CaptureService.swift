@@ -77,13 +77,19 @@ final class CaptureService {
         try await captureFullDisplay(displayID: id, scale: scale)
     }
 
-    func captureWindow(windowID: CGWindowID, pixelSize: CGSize) async throws -> CGImage {
+    /// Capture une fenêtre via ScreenCaptureKit.
+    ///
+    /// NB : SC rend le contenu de la fenêtre SANS sa barre de titre ; la
+    /// taille vient donc de SCWindow lui-même — imposer la taille des bornes
+    /// CGWindow (barre incluse) étirait l'image et décalait le contenu.
+    func captureWindow(windowID: CGWindowID, scale: CGFloat) async throws -> CGImage {
         await refresh()
         guard let window = content?.windows.first(where: { $0.windowID == windowID }) else {
             throw CaptureError.windowNotFound
         }
         let filter = SCContentFilter(desktopIndependentWindow: window)
         let config = baseConfig()
+        let pixelSize = Geometry.pixelSize(points: window.frame.size, scale: scale)
         config.width = max(Int(pixelSize.width.rounded()), 1)
         config.height = max(Int(pixelSize.height.rounded()), 1)
         return try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
