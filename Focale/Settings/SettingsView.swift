@@ -2,28 +2,71 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
+// MARK: - Onglets des réglages (sélection explicite : chaque onglet est cliquable).
+
+enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
+    case general, shortcuts, destination, presets, appearance, privacy
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .general: String(localized: "Général")
+        case .shortcuts: String(localized: "Raccourcis")
+        case .destination: String(localized: "Destination")
+        case .presets: String(localized: "Préréglages")
+        case .appearance: String(localized: "Apparence")
+        case .privacy: String(localized: "Confidentialité")
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .general: "gearshape"
+        case .shortcuts: "keyboard"
+        case .destination: "folder"
+        case .presets: "square.stack"
+        case .appearance: "paintbrush"
+        case .privacy: "lock.shield"
+        }
+    }
+}
+
 // MARK: - Réglages (§7.2.F : 6 onglets, aperçu en direct).
 
 struct SettingsView: View {
     @Bindable var settings: AppSettings
     var onClearHistory: (() -> Void)?
+    @State private var selection: SettingsTab
+
+    init(settings: AppSettings, onClearHistory: (() -> Void)? = nil, initialTab: SettingsTab = .general) {
+        self.settings = settings
+        self.onClearHistory = onClearHistory
+        _selection = State(initialValue: initialTab)
+    }
 
     var body: some View {
-        TabView {
-            generalPane
-                .tabItem { Label("Général", systemImage: "gearshape") }
-            shortcutsPane
-                .tabItem { Label("Raccourcis", systemImage: "keyboard") }
-            destinationPane
-                .tabItem { Label("Destination", systemImage: "folder") }
-            presetsPane
-                .tabItem { Label("Préréglages", systemImage: "square.stack") }
-            appearancePane
-                .tabItem { Label("Apparence", systemImage: "paintbrush") }
-            privacyPane
-                .tabItem { Label("Confidentialité", systemImage: "lock.shield") }
+        TabView(selection: $selection) {
+            ForEach(SettingsTab.allCases) { tab in
+                pane(for: tab)
+                    .tabItem { Label(tab.title, systemImage: tab.icon) }
+                    .tag(tab)
+                    .accessibilityIdentifier("settings-tab-\(tab.rawValue)")
+            }
         }
         .frame(width: 560, height: 420)
+    }
+
+    @ViewBuilder
+    private func pane(for tab: SettingsTab) -> some View {
+        switch tab {
+        case .general: generalPane
+        case .shortcuts: shortcutsPane
+        case .destination: destinationPane
+        case .presets: presetsPane
+        case .appearance: appearancePane
+        case .privacy: privacyPane
+        }
     }
 
     // MARK: Général.

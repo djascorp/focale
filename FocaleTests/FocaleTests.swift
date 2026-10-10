@@ -239,6 +239,26 @@ struct OnboardingPolicyTests {
     }
 }
 
+// MARK: - Onglets des réglages (6 onglets sélectionnables).
+
+@Suite("Onglets des réglages")
+struct SettingsTabTests {
+    @Test("Six onglets stables et uniques")
+    func sixUniqueTabs() {
+        #expect(SettingsTab.allCases.count == 6)
+        #expect(Set(SettingsTab.allCases.map(\.id)).count == 6)
+        #expect(Set(SettingsTab.allCases.map(\.rawValue)).count == 6)
+    }
+
+    @Test("Chaque onglet a un titre et une icône")
+    func titlesAndIcons() {
+        for tab in SettingsTab.allCases {
+            #expect(!tab.title.isEmpty)
+            #expect(!tab.icon.isEmpty)
+        }
+    }
+}
+
 // MARK: - Modèle d'édition.
 
 @Suite("Modèle d'édition")
