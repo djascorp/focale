@@ -1,70 +1,110 @@
-# Focale — Premium Screenshot Tool for macOS
+# Focale
 
-One shortcut, one bar: capture, annotate, and share in under 3 seconds.
-A premium interface that feels like part of macOS, with 100% on-device processing.
+**The premium screenshot tool for macOS.** One shortcut, one bar: capture, annotate, and share in under 3 seconds.
 
-## Status: UI Phase (Design)
+Focale replaces the built-in screenshot utility with a faster flow and a native, premium interface. Everything is processed on-device — no image ever leaves your Mac.
 
-All PRD §7.2 screens are implemented in SwiftUI and previewable in the
-**UI gallery** (the main window at launch):
+## Features
 
-- Floating capture bar (modes, visible destination, timer, repeat, Capture)
-- Selection overlay (handles, dimension badge, 8× magnifier, precise size F5)
-- Floating preview toast (hover actions, swipe away, adjustable timeout)
-- Working annotation editor (arrow, shapes, text, highlighter, blur,
-  pixelate, step numbering, magnifier, undo/redo, PNG export)
-- History (search, pinning, drag-and-drop)
-- Settings (6 tabs, shortcut recorder, presets)
-- Onboarding (3 screens, real TCC permission request)
-
-System wiring (global shortcut, multi-display NSPanel overlay, ScreenCaptureKit,
-Vision OCR, SwiftData, video recording) comes in the next phases.
+- **One shortcut** (`Cmd + Shift + 5`, customizable) opens the floating capture bar
+- **Capture modes**: area, window, full screen, with one-key switching
+- **Visible destination**: clipboard, file, or both — never buried in a submenu
+- **Repeat last area** with a button or dedicated shortcut
+- **Precise areas**: exact sizes (e.g. 1080×720) and ratios (16:9, 4:3, 1:1)
+- **Quick annotation**: arrow, shapes, text, highlighter, blur, pixelate, step numbering, magnifier
+- **Floating thumbnail**: copy, save, annotate, share, or delete on hover
+- **History panel**: search (OCR-indexed), pinning, drag-and-drop to any app
+- **OCR**: copy text from any area (French + English)
+- **Presets**: Support, Tutorial, Email — destination, format, and annotation in one click
+- **Screen recording**: area or fullscreen, MP4 / GIF export
+- **Accessible**: VoiceOver labels, full keyboard control, reduced-motion and contrast support
 
 ## Requirements
 
-- macOS 14+ (optimized for macOS 26), Xcode 17+, Swift 6
-- No external dependencies (Swift Package Manager: nothing yet)
+- macOS 14 Sonoma or later (optimized for macOS 26)
+- Apple Silicon or Intel
+- Xcode 17+ and Swift 6 to build from source
 
-## Build
+## Install & Run
+
+Clone the repository, then either open the project in Xcode:
 
 ```sh
-# Icon (regenerates the 10 appiconset PNGs)
-swift Focale/Tools/make_icon.swift
+open Focale/Focale.xcodeproj
+```
 
-# Build
+and press `⌘R`, or build from the terminal:
+
+```sh
 xcodebuild -project Focale/Focale.xcodeproj -scheme Focale -configuration Debug build
-
-# Tests (Swift Testing)
 xcodebuild -project Focale/Focale.xcodeproj -scheme Focale test
 ```
 
-Or open `Focale/Focale.xcodeproj` in Xcode and run (⌘R).
+On first launch, Focale guides you through granting the **Screen Recording** permission and choosing your shortcut and default destination.
 
-## Structure
+## Usage
+
+1. Press `Cmd + Shift + 5` — the screen dims and the capture bar appears.
+2. Drag an area (live dimensions + 8× magnifier), or press `2` / `3` for window / fullscreen.
+3. Release: the capture is already in your clipboard (or saved, per your destination).
+4. Click the thumbnail to annotate: `A` arrow, `T` text, `B` blur, `N` numbering.
+5. Press `Cmd + Shift + H` anytime to browse your history.
+
+## Configuration
+
+All settings live in `Focale → Settings…` (`⌘,`):
+
+| Tab | Controls |
+| --- | -------- |
+| General | Default destination, login item, thumbnail timeout, shutter sound |
+| Shortcuts | Capture, history, and repeat-last-area shortcuts |
+| Destination | Save folder, PNG / JPEG format, file-name pattern |
+| Presets | One-click Support / Tutorial / Email configurations |
+| Appearance | System / light / dark theme |
+| Privacy | Local-only processing, optional anonymous stats, clear history |
+
+## How It Works
+
+| Capability | Technology |
+| ---------- | ---------- |
+| Screenshot & recording | ScreenCaptureKit |
+| Global shortcut | System hot-key registration |
+| Selection overlay | Non-activating multi-display panels |
+| Blur / pixelate | Core Image |
+| OCR & sensitive-data hints | Vision + on-device patterns |
+| History & search | SwiftData + OCR index |
+| Sharing | Native share sheet |
+| Login item | SMAppService |
+| Automation | App Intents (Shortcuts) |
+
+## Project Structure
 
 ```
 Focale/
-├── Focale.xcodeproj/        Xcode project + shared scheme
-├── Tools/                   scripts (icon generation)
-├── Focale/                  app sources
-│   ├── App/                 FocaleApp, AppState, AppSettings
-│   ├── Core/                models, geometry, images, sensitive-data detection
-│   ├── DesignSystem/        colors, typography, motion, components
-│   ├── Bar/                 floating capture bar
-│   ├── Overlay/             selection + magnifier + precise size
-│   ├── Toast/               floating preview toast
-│   ├── Editor/              model, canvas, inspector
-│   ├── History/             history panel
-│   ├── Settings/            settings + shortcut recorder
-│   ├── Onboarding/          3 screens + logo
-│   ├── ContentView.swift    UI gallery (temporary, design phase)
-│   └── Resources/           Assets + Localizable (FR/EN)
-└── FocaleTests/             Swift Testing (geometry, detection, editor)
+├── Focale.xcodeproj/   Xcode project + shared scheme
+├── Tools/              Helper scripts (app-icon generator)
+├── Focale/             App sources (SwiftUI + AppKit where needed)
+└── FocaleTests/        Swift Testing suite
 ```
 
-## Roadmap (PRD §13)
+Key areas: `Bar/` (capture bar), `Overlay/` (selection), `Toast/` (thumbnail),
+`Editor/` (annotation), `History/`, `Settings/`, `Onboarding/`,
+`DesignSystem/`, `Core/` (models, geometry, imaging).
 
-1. **Core**: global shortcut, NSPanel, ScreenCaptureKit, destination, precise area
-2. **Editing**: real timer, system thumbnail, crop
-3. **v1.1**: Vision OCR, SwiftData history, presets, video
-4. **v1.2+**: scrolling capture, auto sensitive-data blur, Shortcuts, iCloud
+## Roadmap
+
+- [x] Capture bar, selection overlay, annotation editor, history, settings
+- [ ] Global shortcut + ScreenCaptureKit wiring
+- [ ] OCR, SwiftData history, presets, video recording (v1.1)
+- [ ] Scrolling capture, auto sensitive-data blur, Shortcuts, iCloud (v1.2+)
+
+## Contributing
+
+Issues and pull requests are welcome. Please keep the UI fast (< 150 ms to show the bar),
+keyboard-first, and fully local — no network calls for capture data.
+Run the test suite before submitting.
+
+## Privacy
+
+Focale processes everything locally. No account, no cloud upload, no telemetry
+without your explicit opt-in.
