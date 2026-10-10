@@ -215,6 +215,30 @@ struct HistoryStoreTests {
     }
 }
 
+// MARK: - Politique d'onboarding (ne jamais réafficher après accord).
+
+@Suite("Politique d'onboarding")
+struct OnboardingPolicyTests {
+    @Test("La bienvenue ne s'affiche qu'avant le premier passage")
+    func welcomeOnce() {
+        #expect(OnboardingPolicy.shouldShowWelcome(hasOnboarded: false))
+        #expect(!OnboardingPolicy.shouldShowWelcome(hasOnboarded: true))
+    }
+
+    @Test("La capture procède quand l'accès est accordé")
+    func gateProceedsWhenGranted() {
+        #expect(OnboardingPolicy.captureGate(screenCaptureGranted: true) == .proceed)
+    }
+
+    @Test("La récupération se referme d'elle-même à l'octroi")
+    func recoveryDismissesOnGrant() {
+        #expect(
+            OnboardingPolicy.captureGate(screenCaptureGranted: false)
+                == .showRecovery(dismissWhenGranted: true)
+        )
+    }
+}
+
 // MARK: - Modèle d'édition.
 
 @Suite("Modèle d'édition")

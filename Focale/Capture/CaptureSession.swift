@@ -69,7 +69,7 @@ final class CaptureSession {
             self?.registerHotkeys()
         }
         FocaleIntentHandler.shared.session = self
-        if !hasOnboarded {
+        if OnboardingPolicy.shouldShowWelcome(hasOnboarded: hasOnboarded) {
             onboarding.show(settings: appState.settings, startPage: 0) { [weak self] in
                 self?.hasOnboarded = true
             }
@@ -90,8 +90,15 @@ final class CaptureSession {
 
     func beginCapture() {
         guard !isActive, !isRecording else { return }
-        guard CGPreflightScreenCaptureAccess() else {
-            onboarding.show(settings: appState.settings, startPage: 1) { [weak self] in
+        switch OnboardingPolicy.captureGate(screenCaptureGranted: CGPreflightScreenCaptureAccess()) {
+        case .proceed:
+            break
+        case .showRecovery(let dismissWhenGranted):
+            onboarding.show(
+                settings: appState.settings,
+                startPage: 1,
+                dismissWhenGranted: dismissWhenGranted
+            ) { [weak self] in
                 self?.hasOnboarded = true
             }
             return

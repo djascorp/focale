@@ -125,6 +125,9 @@ struct OnboardingView: View {
 
 private struct PermissionPane: View {
     @State private var granted = CGPreflightScreenCaptureAccess()
+    @State private var openedSettings = false
+
+    private let poll = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: 14) {
@@ -146,6 +149,7 @@ private struct PermissionPane: View {
                 HStack(spacing: 10) {
                     Button("Autoriser…") {
                         CGRequestScreenCaptureAccess()
+                        openedSettings = true
                         openPrivacySettings()
                     }
                     .buttonStyle(FocaleAccentButtonStyle())
@@ -156,7 +160,29 @@ private struct PermissionPane: View {
                 Text("Réglages Système → Confidentialité et sécurité → Enregistrement de l'écran.")
                     .font(.focaleCaption)
                     .foregroundStyle(.secondary)
+                if openedSettings {
+                    VStack(spacing: 8) {
+                        Text("macOS n'active l'autorisation qu'à la réouverture de Focale. Si la demande persiste après l'avoir accordée, relancez l'application.")
+                            .font(.focaleCaption)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: 440)
+                        Button("Quitter et rouvrir Focale") {
+                            RelaunchHelper.relaunch()
+                        }
+                        .buttonStyle(.link)
+                    }
+                    .padding(.top, 4)
+                }
             }
+        }
+        .onReceive(poll) { _ in
+            if !granted {
+                granted = CGPreflightScreenCaptureAccess()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            granted = CGPreflightScreenCaptureAccess()
         }
     }
 

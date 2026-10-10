@@ -48,6 +48,7 @@
 		F0CA1E0000000000000000B0 /* VideoToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000070 /* VideoToastView.swift */; };
 		F0CA1E0000000000000000B1 /* ShotRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000071 /* ShotRecord.swift */; };
 		F0CA1E0000000000000000B2 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000072 /* AppIntents.swift */; };
+		F0CA1E0000000000000000B3 /* OnboardingPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CA1E000000000000000073 /* OnboardingPolicy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -104,6 +105,7 @@
 		F0CA1E000000000000000070 /* VideoToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoToastView.swift; sourceTree = "<group>"; };
 		F0CA1E000000000000000071 /* ShotRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotRecord.swift; sourceTree = "<group>"; };
 		F0CA1E000000000000000072 /* AppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
+		F0CA1E000000000000000073 /* OnboardingPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPolicy.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -288,6 +290,7 @@
 			children = (
 				F0CA1E000000000000000055 /* OnboardingView.swift */,
 				F0CA1E00000000000000006B /* OnboardingWindowController.swift */,
+				F0CA1E000000000000000073 /* OnboardingPolicy.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -449,6 +452,7 @@
 				F0CA1E0000000000000000B0 /* VideoToastView.swift in Sources */,
 				F0CA1E0000000000000000B1 /* ShotRecord.swift in Sources */,
 				F0CA1E0000000000000000B2 /* AppIntents.swift in Sources */,
+				F0CA1E0000000000000000B3 /* OnboardingPolicy.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
