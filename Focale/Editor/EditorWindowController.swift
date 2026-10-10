@@ -25,9 +25,12 @@ final class EditorWindowController: NSObject, NSWindowDelegate {
             onCancel: { MainActor.assumeIsolated { [weak self] in self?.requestClose() } }
         )
         let hosting = NSHostingController(rootView: view)
+        // Taille de fenêtre dictée ici uniquement (voir PreviewWindow).
+        hosting.sizingOptions = []
         let window = NSWindow(contentViewController: hosting)
         window.title = "Annoter — \(shot.name)"
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+        window.contentMinSize = NSSize(width: 980, height: 640)
         window.setContentSize(NSSize(width: 1080, height: 700))
         window.center()
         window.delegate = self

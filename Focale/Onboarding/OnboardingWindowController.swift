@@ -29,6 +29,8 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
             onFinish: { MainActor.assumeIsolated { [weak self] in self?.requestClose() } }
         )
         let hosting = NSHostingController(rootView: view)
+        // Taille de fenêtre dictée ici uniquement (voir PreviewWindow).
+        hosting.sizingOptions = []
         let window = NSWindow(contentViewController: hosting)
         window.title = "Bienvenue dans Focale"
         window.styleMask = [.titled, .closable]

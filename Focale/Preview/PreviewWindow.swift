@@ -32,9 +32,15 @@ final class PreviewWindowController: NSObject, NSWindowDelegate {
             window?.close()
         }
         let hosting = NSHostingController(rootView: PreviewView(shot: shot, actions: actions))
+        // Sans cela, le contrôleur redimensionne la fenêtre d'après la taille
+        // intrinsèque de NSImageView (l'image en pixels) : une capture plein
+        // écran ouvrait une fenêtre plus grande que l'écran, ne laissant voir
+        // qu'une tranche d'image sans la barre d'actions.
+        hosting.sizingOptions = []
         let window = NSWindow(contentViewController: hosting)
         window.title = "Aperçu — \(shot.name)"
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+        window.contentMinSize = NSSize(width: 640, height: 420)
         window.setContentSize(Self.windowSize(for: shot))
         window.center()
         window.delegate = self
@@ -136,7 +142,7 @@ struct PreviewView: View {
         Group {
             if isVideo {
                 if let player {
-                    VideoPlayer(player: player)
+                    PlayerView(player: player)
                 } else {
                     ContentUnavailableView(
                         "Vidéo indisponible",
@@ -167,5 +173,28 @@ struct PreviewView: View {
     private static func durationText(_ duration: TimeInterval) -> String {
         let seconds = Int(duration.rounded())
         return String(format: "%02d:%02d", seconds / 60, seconds % 60)
+    }
+}
+
+// MARK: - Lecteur AppKit.
+//
+// SwiftUI `VideoPlayer` (shim _AVKit_SwiftUI) plante à l'initialisation de
+// ses métadonnées Swift sur cette configuration (SIGABRT au premier
+// instantiement) : on passe par AVPlayerView d'AVKit, éprouvé.
+
+private struct PlayerView: NSViewRepresentable {
+    let player: AVPlayer
+
+    func makeNSView(context: Context) -> AVPlayerView {
+        let view = AVPlayerView()
+        view.player = player
+        view.controlsStyle = .floating
+        return view
+    }
+
+    func updateNSView(_ nsView: AVPlayerView, context: Context) {
+        if nsView.player !== player {
+            nsView.player = player
+        }
     }
 }
