@@ -100,7 +100,9 @@ struct EditorView: View {
             icon: tool.icon,
             active: model.tool == tool,
             size: 34,
-            help: tool.isImplemented ? "\(tool.title) (\(tool.keyHint))" : "\(tool.title) — bientôt disponible"
+            help: tool.isImplemented
+                ? "\(tool.title) — \(tool.hint) (\(tool.keyHint))"
+                : "\(tool.title) — bientôt disponible"
         ) {
             if tool.isImplemented { model.tool = tool }
         }

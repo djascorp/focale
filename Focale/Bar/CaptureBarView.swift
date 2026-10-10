@@ -66,8 +66,8 @@ struct CaptureBarView: View {
                 }
                 .buttonStyle(FocalePressableStyle())
                 .onHover { hoveredMode = $0 ? item : nil }
-                .help("\(item.title) (\(item.keyHint))")
-                .accessibilityLabel(item.title)
+                .help("Mode \(item.title) — \(item.hint) (\(item.keyHint))")
+                .accessibilityLabel("Mode \(item.title) : \(item.hint)")
             }
         }
         .accessibilityElement(children: .contain)
@@ -99,8 +99,8 @@ struct CaptureBarView: View {
                 }
                 .buttonStyle(FocalePressableStyle())
                 .onHover { hoveredDestination = $0 ? item : nil }
-                .help("\(item.title)")
-                .accessibilityLabel("Destination : \(item.title)")
+                .help("\(item.title) — \(item.hint)")
+                .accessibilityLabel("Destination : \(item.title), \(item.hint)")
             }
         }
         .accessibilityElement(children: .contain)
@@ -143,7 +143,7 @@ struct CaptureBarView: View {
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
-        .help("Minuteur (T)")
+        .help("Minuteur — délai avant capture (T)")
         .accessibilityLabel("Minuteur : \(timer.title)")
     }
 

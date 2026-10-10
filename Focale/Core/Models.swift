@@ -37,6 +37,17 @@ enum CaptureMode: String, CaseIterable, Identifiable {
         case .scroll: "5"
         }
     }
+
+    /// Infobulle : ce que fait le mode concrètement.
+    var hint: String {
+        switch self {
+        case .region: "Dessinez la zone à capturer"
+        case .window: "Survolez puis cliquez la fenêtre à capturer"
+        case .screen: "Cliquez pour capturer tout l'écran"
+        case .video: "Dessinez la zone à enregistrer, ou cliquez pour l'écran entier"
+        case .scroll: "Sélectionnez la page : Focale défile et assemble les bandes"
+        }
+    }
 }
 
 // MARK: - Destination (F3).
@@ -59,6 +70,15 @@ enum Destination: String, CaseIterable, Identifiable {
         case .clipboard: "clipboard"
         case .file: "folder"
         case .both: "doc.on.clipboard"
+        }
+    }
+
+    /// Infobulle : ce que la destination fait concrètement.
+    var hint: String {
+        switch self {
+        case .clipboard: "Copie la capture sans l'enregistrer"
+        case .file: "Enregistre dans le dossier choisi"
+        case .both: "Copie et enregistre"
         }
     }
 }
@@ -352,6 +372,24 @@ enum AnnotationTool: String, CaseIterable, Identifiable {
         case .number: "N"
         case .loupe: "M"
         case .crop: "C"
+        }
+    }
+
+    /// Infobulle : à quoi sert l'outil et comment s'en servir.
+    var hint: String {
+        switch self {
+        case .select: "Cliquez un calque pour le sélectionner, glissez pour le déplacer"
+        case .arrow: "Tracez pour pointer un élément précis"
+        case .rectangle: "Tracez pour encadrer une zone"
+        case .ellipse: "Tracez pour entourer une zone"
+        case .line: "Tracez un trait simple"
+        case .text: "Cliquez pour poser un texte, modifiable dans l'inspecteur"
+        case .highlighter: "Tracez pour surligner comme au marqueur"
+        case .blur: "Cliquez ou tracez pour flouter une zone sensible"
+        case .pixelate: "Cliquez ou tracez pour pixelliser une zone sensible"
+        case .number: "Cliquez pour poser une étape numérotée"
+        case .loupe: "Cliquez pour zoomer sur un détail"
+        case .crop: "Tracez la zone à conserver, le reste sera supprimé"
         }
     }
 }
