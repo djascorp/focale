@@ -105,6 +105,23 @@ final class HistoryStore {
         shots.removeAll { $0.id == id }
     }
 
+    /// Efface tout : fichiers vidéo associés à la corbeille, enregistrements
+    /// SwiftData supprimés, mémoire vidée. Sans le fetch/delete, la base
+    /// réapparaissait au lancement suivant.
+    func clearAll() {
+        for shot in shots where shot.kind == .video {
+            if let url = shot.fileURL {
+                try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
+            }
+        }
+        let records = (try? context.fetch(FetchDescriptor<ShotRecord>())) ?? []
+        for record in records {
+            context.delete(record)
+        }
+        save()
+        shots.removeAll()
+    }
+
     func togglePin(_ id: CapturedShot.ID) {
         if let record = record(for: id) {
             record.pinned.toggle()

@@ -46,15 +46,44 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        TabView(selection: $selection) {
-            ForEach(SettingsTab.allCases) { tab in
-                pane(for: tab)
-                    .tabItem { Label(tab.title, systemImage: tab.icon) }
-                    .tag(tab)
-                    .accessibilityIdentifier("settings-tab-\(tab.rawValue)")
-            }
+        HStack(spacing: 0) {
+            tabList
+            Divider()
+            pane(for: selection)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(width: 560, height: 420)
+    }
+
+    // Barre latérale à la manière de Réglages Système. TabView ne recevait
+    // pas les clics sur ses onglets dans la scène Settings : chaque ligne est
+    // ici un bouton standard, sans dépendre du comportement de TabView.
+    private var tabList: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            ForEach(SettingsTab.allCases) { tab in
+                Button {
+                    selection = tab
+                } label: {
+                    Label(tab.title, systemImage: tab.icon)
+                        .frame(maxWidth: .infinity, minHeight: 26, alignment: .leading)
+                        .padding(.horizontal, 8)
+                        .background(
+                            Color.focaleAccentStart.opacity(selection == tab ? 0.16 : 0),
+                            in: RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        )
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(selection == tab ? Color.focaleAccentStart : Color.primary)
+                .help(tab.title)
+                .accessibilityIdentifier("settings-tab-\(tab.rawValue)")
+                .accessibilityLabel(tab.title)
+                .accessibilityAddTraits(selection == tab ? .isSelected : [])
+            }
+            Spacer()
+        }
+        .padding(10)
+        .frame(width: 160)
     }
 
     @ViewBuilder

@@ -100,7 +100,7 @@ struct ContentView: View {
         case .settings:
             SettingsView(
                 settings: appState.settings,
-                onClearHistory: { appState.history.shots.removeAll() }
+                onClearHistory: { appState.history.clearAll() }
             )
         case .onboarding:
             OnboardingView(settings: appState.settings, onFinish: { selection = .bar })
