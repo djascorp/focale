@@ -45,6 +45,7 @@ final class CaptureSession {
     private var recordingPanel: FloatingStatusPanel?
     private var recordingCrop: CGRect?
     private var recordingScale: CGFloat = 2
+    private var recordingFileName = ""
     private var scrollPanel: FloatingStatusPanel?
     private var scrollTask: Task<Void, Never>?
 
@@ -110,9 +111,15 @@ final class CaptureSession {
         showOverlays()
         showBar()
         NSApp.activate(ignoringOtherApps: true)
-        let mouse = NSEvent.mouseLocation
-        let keyPanel = overlays.first { $0.screen.frame.contains(mouse) }?.panel ?? overlays.first?.panel
-        keyPanel?.makeKeyAndOrderFront(nil)
+        // La barre prend le clavier (1-5, T, R, C, Entrée, Échap) ; l'overlay
+        // reste cliquable à la souris même sans être fenêtre clé.
+        if let barPanel {
+            barPanel.makeKeyAndOrderFront(nil)
+        } else {
+            let mouse = NSEvent.mouseLocation
+            let keyPanel = overlays.first { $0.screen.frame.contains(mouse) }?.panel ?? overlays.first?.panel
+            keyPanel?.makeKeyAndOrderFront(nil)
+        }
     }
 
     func cancel() {
@@ -471,6 +478,7 @@ final class CaptureSession {
         recordingCrop = rect
         recordingScale = target.scale
         let fileName = settings.sampleVideoFileName()
+        recordingFileName = fileName
         let capturesAudio = settings.recordSystemAudio
         Task { [weak self] in
             guard let self else { return }
@@ -530,7 +538,9 @@ final class CaptureSession {
         } else {
             croppedURL = tempURL
         }
-        let baseName = settings.sampleVideoFileName()
+        // Nom figé au démarrage : identique au nom affiché dans le panneau,
+        // même si les secondes ont changé pendant l'enregistrement.
+        let baseName = recordingFileName.isEmpty ? settings.sampleVideoFileName() : recordingFileName
         guard let finalURL = DestinationService.uniqueURL(in: folder, baseName: baseName) else {
             throw VideoError.transcodeFailed
         }
@@ -756,6 +766,9 @@ final class CaptureSession {
     // MARK: Divers.
 
     func openSettings() {
+        // Ferme la session (hors enregistrement) : l'overlay plein écran
+        // intercepterait tous les clics de la fenêtre Réglages, restée dessous.
+        if isActive, !isRecording { cancel() }
         NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
     }
 

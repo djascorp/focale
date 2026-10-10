@@ -13,7 +13,9 @@ final class CaptureBarPanel: NSPanel {
         )
         isOpaque = false
         backgroundColor = .clear
-        level = .floating
+        // Au-dessus de l'overlay (.screenSaver) : la barre doit rester visible
+        // et cliquable pendant la sélection.
+        level = NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue + 1)
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         hasShadow = false
         hidesOnDeactivate = false
