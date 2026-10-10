@@ -184,8 +184,11 @@ struct SettingsView: View {
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
                                 .stroke(.secondary.opacity(0.3))
                         )
-                    Capsule()
-                        .fill(LinearGradient.focaleAccent)
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.focaleAccentStart)
+                        .frame(width: 60, height: 36)
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.focaleTextSecondary.opacity(0.25))
                         .frame(width: 60, height: 36)
                 }
             }

@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - Typographie Focale (§8.4 : SF Pro + SF Mono, chiffres tabulaires).
 
 extension Font {
+    static let focaleDisplay = Font.system(size: 28, weight: .semibold)
     static let focaleTitle = Font.system(size: 20, weight: .semibold)
     static let focaleHeadline = Font.system(size: 15, weight: .semibold)
     static let focaleLabel = Font.system(size: 13, weight: .medium)

@@ -43,6 +43,17 @@ struct FocaleAccentButtonStyle: ButtonStyle {
     }
 }
 
+// MARK: - Style pressé : micro-interaction discrète (échelle + fondu).
+
+struct FocalePressableStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.92 : 1)
+            .opacity(configuration.isPressed ? 0.8 : 1)
+            .animation(.focaleStandard, value: configuration.isPressed)
+    }
+}
+
 // MARK: - Bouton d'icône de barre.
 
 struct BarIconButton: View {
@@ -51,6 +62,8 @@ struct BarIconButton: View {
     var size: CGFloat = 36
     var help: String = ""
     var action: () -> Void
+
+    @State private var hover = false
 
     var body: some View {
         Button(action: action) {
@@ -62,11 +75,15 @@ struct BarIconButton: View {
                 .background {
                     if active {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(LinearGradient.focaleAccent)
+                            .fill(Color.focaleAccentStart)
+                    } else if hover {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(.secondary.opacity(0.12))
                     }
                 }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(FocalePressableStyle())
+        .onHover { hover = $0 }
         .help(help)
         .accessibilityLabel(help)
     }

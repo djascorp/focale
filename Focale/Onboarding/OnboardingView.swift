@@ -34,31 +34,34 @@ struct OnboardingView: View {
     // MARK: Page 1 — valeur.
 
     private var valuePage: some View {
-        VStack(spacing: 16) {
-            LogoMark(size: 96)
+        VStack(spacing: 14) {
+            LogoMark(size: 88)
             Text("Capturer, annoter, partager en moins de 3 secondes.")
-                .font(.focaleTitle)
+                .font(.focaleDisplay)
                 .multilineTextAlignment(.center)
+                .frame(maxWidth: 480)
             Text("Un seul raccourci, une seule barre. Focale s'efface pour ne garder que l'essentiel : votre capture.")
                 .font(.focaleBody)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 440)
-            HStack(spacing: 24) {
+            HStack(spacing: 16) {
                 valuePoint(icon: "rectangle.dashed", title: "Zone précise", detail: "Tailles et ratios exacts")
                 valuePoint(icon: "pencil.tip", title: "Annotation", detail: "Flou, numérotation, loupe")
                 valuePoint(icon: "lock.shield", title: "100 % local", detail: "Aucune image envoyée")
             }
-            .padding(.top, 8)
+            .padding(.top, 12)
         }
         .padding()
     }
 
     private func valuePoint(icon: String, title: String, detail: String) -> some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 24))
-                .foregroundStyle(Color.focaleAccentStart)
+                .font(.system(size: 22, weight: .medium))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.primary)
+                .frame(height: 28)
             Text(title).font(.focaleLabel)
             Text(detail).font(.focaleCaption).foregroundStyle(.secondary)
         }

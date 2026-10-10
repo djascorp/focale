@@ -15,6 +15,8 @@ struct CaptureBarView: View {
     var countdown: Int? = nil
 
     @Namespace private var modeIndicator
+    @State private var hoveredMode: CaptureMode?
+    @State private var hoveredDestination: Destination?
 
     var body: some View {
         HStack(spacing: 4) {
@@ -54,12 +56,16 @@ struct CaptureBarView: View {
                         .background {
                             if mode == item {
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(LinearGradient.focaleAccent)
+                                    .fill(Color.focaleAccentStart)
                                     .matchedGeometryEffect(id: "mode-indicator", in: modeIndicator)
+                            } else if hoveredMode == item {
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .fill(.secondary.opacity(0.12))
                             }
                         }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(FocalePressableStyle())
+                .onHover { hoveredMode = $0 ? item : nil }
                 .help("\(item.title) (\(item.keyHint))")
                 .accessibilityLabel(item.title)
             }
@@ -85,10 +91,14 @@ struct CaptureBarView: View {
                             if destination == item {
                                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                                     .fill(Color.focaleAccentStart.opacity(0.14))
+                            } else if hoveredDestination == item {
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .fill(.secondary.opacity(0.12))
                             }
                         }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(FocalePressableStyle())
+                .onHover { hoveredDestination = $0 ? item : nil }
                 .help("\(item.title)")
                 .accessibilityLabel("Destination : \(item.title)")
             }
