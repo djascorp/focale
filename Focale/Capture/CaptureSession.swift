@@ -260,13 +260,13 @@ final class CaptureSession {
             cancel()
             return
         }
-        runCapture(.display(id: target.displayID))
+        runCapture(.display(id: target.displayID, scale: target.scale))
     }
 
     private enum CaptureKind {
         case region(displayID: CGDirectDisplayID, rect: CGRect, scale: CGFloat)
         case window(id: CGWindowID)
-        case display(id: CGDirectDisplayID)
+        case display(id: CGDirectDisplayID, scale: CGFloat)
     }
 
     private func runCapture(_ kind: CaptureKind) {
@@ -307,8 +307,8 @@ final class CaptureSession {
                 lastCapture = LastCapture(displayID: displayID, rect: rect, scale: scale)
             case .window(let id):
                 cgImage = try await captureWindowOrFallback(id: id)
-            case .display(let id):
-                cgImage = try await capture.captureDisplay(id: id)
+            case .display(let id, let scale):
+                cgImage = try await capture.captureDisplay(id: id, scale: scale)
             }
             finishCapture(image: cgImage)
         } catch {

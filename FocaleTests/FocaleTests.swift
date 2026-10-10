@@ -106,6 +106,7 @@ struct HotKeyTests {
     }
 }
 
+
 // MARK: - Recadrage déterministe (verrouille l'orientation haut-gauche).
 
 @Suite("Recadrage déterministe")

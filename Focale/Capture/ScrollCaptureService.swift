@@ -132,8 +132,8 @@ private final class CaptureServiceBridge {
         let config = SCStreamConfiguration()
         config.showsCursor = false
         config.capturesAudio = false
-        config.width = display.width
-        config.height = display.height
+        config.width = max(Int((CGFloat(display.width) * scale).rounded()), 1)
+        config.height = max(Int((CGFloat(display.height) * scale).rounded()), 1)
         let full = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
         guard let cropped = Images.crop(full, toPoints: rect, scale: scale) else {
             throw CaptureError.cropFailed

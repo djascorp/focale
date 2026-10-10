@@ -51,29 +51,30 @@ final class CaptureService {
         return config
     }
 
-    func captureFullDisplay(displayID: CGDirectDisplayID) async throws -> CGImage {
+    /// Capture plein écran en pleine résolution (SCDisplay.width/height sont en points).
+    func captureFullDisplay(displayID: CGDirectDisplayID, scale: CGFloat) async throws -> CGImage {
         await refresh()
         guard let display = content?.displays.first(where: { $0.displayID == displayID }) else {
             throw CaptureError.displayNotFound
         }
         let filter = SCContentFilter(display: display, excludingWindows: ownWindows())
         let config = baseConfig()
-        config.width = display.width
-        config.height = display.height
+        config.width = max(Int((CGFloat(display.width) * scale).rounded()), 1)
+        config.height = max(Int((CGFloat(display.height) * scale).rounded()), 1)
         return try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
     }
 
     /// rect : points, origine haut-gauche de l'écran.
     func captureRegion(displayID: CGDirectDisplayID, rect: CGRect, scale: CGFloat) async throws -> CGImage {
-        let full = try await captureFullDisplay(displayID: displayID)
+        let full = try await captureFullDisplay(displayID: displayID, scale: scale)
         guard let cropped = Images.crop(full, toPoints: rect, scale: scale) else {
             throw CaptureError.cropFailed
         }
         return cropped
     }
 
-    func captureDisplay(id: CGDirectDisplayID) async throws -> CGImage {
-        try await captureFullDisplay(displayID: id)
+    func captureDisplay(id: CGDirectDisplayID, scale: CGFloat) async throws -> CGImage {
+        try await captureFullDisplay(displayID: id, scale: scale)
     }
 
     func captureWindow(windowID: CGWindowID, pixelSize: CGSize) async throws -> CGImage {
