@@ -6,11 +6,13 @@ import SwiftUI
 struct FocaleApp: App {
     @State private var appState: AppState
     @State private var session: CaptureSession
+    @NSApplicationDelegateAdaptor private var appDelegate: LauncherDelegate
 
     init() {
         let state = AppState()
         _appState = State(wrappedValue: state)
         _session = State(wrappedValue: CaptureSession(appState: state))
+        appDelegate.session = session
     }
 
     var body: some Scene {
@@ -37,7 +39,7 @@ struct FocaleApp: App {
         Settings {
             SettingsView(
                 settings: appState.settings,
-                onClearHistory: { appState.history.shots.removeAll() }
+                onClearHistory: { appState.history.clearAll() }
             )
         }
 
@@ -46,6 +48,19 @@ struct FocaleApp: App {
                 .environment(appState)
                 .environment(session)
         }
+    }
+}
+
+// MARK: - Démarrage effectif.
+
+// Le contenu d'un MenuBarExtra n'est instancié qu'au premier clic sur l'icône :
+// sans ce délégué, raccourcis globaux, onboarding et App Intents resteraient
+// inertes jusqu'à ce clic.
+final class LauncherDelegate: NSObject, NSApplicationDelegate {
+    weak var session: CaptureSession?
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        session?.start()
     }
 }
 
