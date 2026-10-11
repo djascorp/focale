@@ -41,8 +41,11 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(GalleryScreen.allCases, selection: $selection) { screen in
-                Label(screen.title, systemImage: screen.icon)
+            List(selection: $selection) {
+                ForEach(GalleryScreen.allCases) { screen in
+                    Label(screen.title, systemImage: screen.icon)
+                        .tag(screen)
+                }
             }
             .navigationSplitViewColumnWidth(190)
             .navigationTitle("Focale · UI")
